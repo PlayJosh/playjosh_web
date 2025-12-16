@@ -6,7 +6,9 @@ import Image from 'next/image';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  const isAuthPage = pathname.startsWith('/login') || 
+                    pathname.startsWith('/signup') ||
+                    pathname.startsWith('/onboarding');
 
   if (isAuthPage) return null;
 

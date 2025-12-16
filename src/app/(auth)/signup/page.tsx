@@ -1,14 +1,50 @@
-import Link from 'next/link';
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+
+      // 1. Sign up the user with email and password
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      })
+
+      if (signUpError) throw signUpError
+
+      // 2. If signup is successful, redirect to verification page
+      router.push('/verify-email')
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during signup')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          {/* <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
-            <span className="text-2xl font-bold text-indigo-600">PJ</span>
-          </div> */}
-        </div>
         <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
           Join PlayJosh
         </h2>
@@ -19,7 +55,13 @@ export default function SignUpPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-10 border border-gray-100">
-          <form className="space-y-5" action="#" method="POST">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+          
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Full Name
@@ -36,6 +78,8 @@ export default function SignUpPage() {
                   type="text"
                   autoComplete="name"
                   required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   className="focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2.5 border"
                   placeholder="John Doe"
                 />
@@ -59,6 +103,8 @@ export default function SignUpPage() {
                   type="email"
                   autoComplete="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2.5 border"
                   placeholder="you@example.com"
                 />
@@ -85,6 +131,8 @@ export default function SignUpPage() {
                     type="password"
                     autoComplete="new-password"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2.5 border"
                     placeholder="••••••••"
                   />
