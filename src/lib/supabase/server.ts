@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import type { CookieOptions } from '@supabase/ssr'
 import type { Database } from '@/types/supabase'
 
+
 // Create a client that can be used in Server Components
 export async function createClient() {
   const cookieStore = await cookies()

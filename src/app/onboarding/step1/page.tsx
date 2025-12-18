@@ -14,8 +14,7 @@ export default function Step1() {
   const [fullName, setFullName] = useState('')
   const [userType, setUserType] = useState<UserType>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [availableTags, setAvailableTags] = useState<Tag[]>([
@@ -44,8 +43,7 @@ export default function Step1() {
     e.preventDefault()
     if (!fullName || !userType || selectedTags.length < 3) return
 
-    setIsLoading(true)
-    setError(null)
+    
 
     try {
       const { data, error: authError } = await supabase.auth.getUser()
@@ -94,11 +92,9 @@ export default function Step1() {
       router.push('/onboarding/step2')
     } catch (err: unknown) {
       console.error('Error saving data:', err)
-      setError('Failed to save data')
-    } finally {
-      setIsLoading(false)
-    }
+      
   }
+}
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
