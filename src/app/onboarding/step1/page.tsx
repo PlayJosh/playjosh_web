@@ -1,87 +1,124 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiCamera, FiSearch, FiX } from 'react-icons/fi';
-import { FaFutbol, FaUserTie, FaHeart } from 'react-icons/fa';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { FiArrowLeft, FiCamera, FiSearch, FiX } from 'react-icons/fi'
+import { FaFutbol, FaUserTie, FaHeart } from 'react-icons/fa'
+import { supabase } from '@/lib/supabase/client'
 
-type UserType = 'player' | 'coach' | 'fan' | null;
-type Tag = { id: string; name: string };
+type UserType = 'player' | 'coach' | 'fan' | null
+type Tag = { id: string; name: string }
 
 export default function Step1() {
-  const router = useRouter();
-  const [fullName, setFullName] = useState('');
-  const [userType, setUserType] = useState<UserType>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([
-   
-  ]);
+  const router = useRouter()
+  const [fullName, setFullName] = useState('')
+  const [userType, setUserType] = useState<UserType>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [availableTags, setAvailableTags] = useState<Tag[]>([
     { id: '3', name: 'Basketball' },
     { id: '4', name: 'Tennis' },
     { id: '5', name: 'Swimming' },
-     { id: '1', name: 'Soccer' },
-    { id: '2', name: 'Fitness' }
-  ]);
+    { id: '1', name: 'Soccer' },
+    { id: '2', name: 'Fitness' },
+  ])
 
   const handleTagSelect = (tag: Tag) => {
-    if (selectedTags.length >= 5) return;
-    setSelectedTags([...selectedTags, tag]);
-    setAvailableTags(availableTags.filter(t => t.id !== tag.id));
-  };
+    if (selectedTags.length >= 5) return
+    setSelectedTags([...selectedTags, tag])
+    setAvailableTags(availableTags.filter((t) => t.id !== tag.id))
+  }
 
   const handleTagRemove = (tagId: string) => {
-    const tagToRemove = selectedTags.find(tag => tag.id === tagId);
-    if (tagToRemove) {
-      setSelectedTags(selectedTags.filter(tag => tag.id !== tagId));
-      setAvailableTags([...availableTags, tagToRemove]);
+    const tagToRemove = selectedTags.find((tag) => tag.id === tagId)
+    if (!tagToRemove) return
+
+    setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId))
+    setAvailableTags([...availableTags, tagToRemove])
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!fullName || !userType || selectedTags.length < 3) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const { data, error: authError } = await supabase.auth.getUser()
+      const user = data.user
+      if (authError || !user?.email) throw new Error('Not authenticated')
+
+      const profilePayload: Record<string, unknown> = {
+        email: user.email,
+        full_name: fullName,
+        role: userType,
+        onboarding_complete: false,
+        profile_photo: null,
+      }
+
+      const profilesStep1 = supabase.from('profiles_step1') as unknown as {
+        upsert: (values: unknown) => Promise<{ error: unknown }>
+      }
+
+      const { error: profileError } = await profilesStep1.upsert(profilePayload)
+      if (profileError) throw profileError
+
+      const sportsPayload: Record<string, unknown>[] = selectedTags.map((tag) => ({
+        email: user.email,
+        sport: tag.name,
+      }))
+
+      await supabase.from('user_sports').delete().eq('email', user.email)
+
+      const userSports = supabase.from('user_sports') as unknown as {
+        insert: (values: unknown[]) => Promise<{ error: unknown }>
+      }
+
+      const { error: sportsError } = await userSports.insert(sportsPayload)
+      if (sportsError) throw sportsError
+
+      // Update user metadata to indicate step 1 is completed
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          onboarding_started: true,
+          onboarding_step: 'step1_completed',
+          ...user.user_metadata // Preserve existing metadata
+        }
+      })
+      if (updateError) throw updateError
+
+      router.push('/onboarding/step2')
+    } catch (err: unknown) {
+      console.error('Error saving data:', err)
+      setError('Failed to save data')
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Save data and move to next step
-    router.push('/onboarding/step2');
-  };
-  
-return (
-  <div className="min-h-screen bg-gray-50 p-6">
-    {/* Header */}
-    <header className="mb-10">
-      <button 
-        onClick={() => router.back()}
-        className="text-gray-700 hover:text-gray-900 transition-colors"
-      >
-        <FiArrowLeft size={28} />
-      </button>
-      <div className="mt-6">
-        <div className="flex justify-between items-center mb-2 px-4">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex-1 flex flex-col items-center">
-              <div 
-                className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
-                  ${step === 1 ? 'bg-indigo-500 text-white shadow-md' : 'bg-white text-gray-400 border-2 border-gray-200'}
-                `}
-              >
-                {step}
-              </div>
-              {step < 3 && (
-                <div className={`h-1.5 w-full mt-4 ${step === 1 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </header>
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <header className="mb-10">
+        <button
+          onClick={() => router.back()}
+          className="text-gray-700 hover:text-gray-900 transition-colors"
+        >
+          <FiArrowLeft size={28} />
+        </button>
+      </header>
 
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
-        Let's Get You Set Up for PlayJosh!
-      </h1>
-      <p className="text-gray-600 mb-10 text-base">
-        Build your profile to start connecting with athletes and coaches.
-      </p>
+      <div className="max-w-md mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+          {"Let's Get You Set Up for PlayJosh!"}
+        </h1>
+        <p className="text-gray-600 mb-10 text-base">
+          Build your profile to start connecting with athletes and coaches.
+        </p>
+
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Profile Photo */}
@@ -282,3 +319,4 @@ return (
 );
 
 }
+

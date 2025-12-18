@@ -2,6 +2,7 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/types/supabase'
 
+
 // Create a single supabase client for interacting with your database
 export const supabase = createBrowserClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,3 +20,4 @@ export const supabase = createBrowserClient<Database>(
 export function createClient() {
   return supabase
 }
+

@@ -1,55 +1,210 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { FiArrowLeft, FiMapPin, FiLink } from 'react-icons/fi';
 
 export default function Step2() {
   const router = useRouter();
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
+  const [website, setWebsite] = useState('');
+  const [profileStrength, setProfileStrength] = useState(60);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
+useEffect(() => {
+  const checkSession = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
       }
-    };
-    checkSession();
-  }, [router]);
+      
+      if (!session) {
+        console.log('No active session, redirecting to login');
+        router.push('/login');
+      } else {
+        console.log('Session exists:', session.user?.email);
+      }
+    } catch (err) {
+      console.error('Error in session check:', err);
+    } 
+  };
+  
+  checkSession();
+}, [router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user?.email) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('profiles_step2')
+      .upsert({
+        email: user.email,
+        bio,
+        location,
+        portfolio: website  
+      });
+
+    if (error) throw error;
+
+    router.push('/onboarding/step3');
+  } catch (err) {
+    console.error('Error saving profile:', err);
+    // You might want to show an error message to the user here
+  }
+};
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Step 2: Profile Setup
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Tell us a bit more about yourself
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header with back button and progress */}
+      <header className="mb-10">
+        <button 
+          onClick={() =>router.push('/onboarding/step1')}
+          className="text-gray-700 hover:text-gray-900 transition-colors"
+        >
+          <FiArrowLeft size={28} />
+        </button>
+        <div className="mt-6">
+          <div className="flex justify-between items-center mb-2 px-4">
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex-1 flex flex-col items-center">
+                <div 
+                  className={`
+                    w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
+                    ${step === 2 ? 'bg-indigo-500 text-white shadow-md' : 'bg-white text-gray-400 border-2 border-gray-200'}
+                  `}
+                >
+                  {step}
+                </div>
+                {step < 3 && (
+                  <div className={`h-1.5 w-full mt-4 ${step <= 2 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-md mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+          Professional Touch
+        </h1>
+        <p className="text-gray-600 mb-6 text-base">
+          Let coaches and scouts know who you are.
+        </p>
+
+        {/* Profile Strength */}
+        <div className="bg-gray-50 p-4 rounded-xl mb-8">
+          <h3 className="text-base font-medium text-gray-900 mb-2">Profile Strength</h3>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+            <div 
+              className="bg-indigo-500 h-2.5 rounded-full" 
+              style={{ width: `${profileStrength}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-600">
+            {profileStrength}% complete • 
+            <span className="text-indigo-600 font-medium"> Add bio to hit 80%!</span>
           </p>
         </div>
-        <div className="mt-8 space-y-6">
-          <div className="rounded-md bg-blue-50 p-4">
-            <p className="text-sm text-blue-700">
-              Step 2 content will be added here
-            </p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Bio */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              YOUR BIO
+            </label>
+            <div className="relative">
+              <textarea
+                value={bio}
+                onChange={(e) => {
+                  setBio(e.target.value);
+                  // Update profile strength based on bio length
+                  if (e.target.value.length > 0 && profileStrength < 80) {
+                    setProfileStrength(80);
+                  } else if (e.target.value.length === 0) {
+                    setProfileStrength(60);
+                  }
+                }}
+                className="block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all h-32 resize-none"
+                placeholder="Tell us about your playstyle..."
+                maxLength={200}
+              />
+              <div className="absolute bottom-2 right-2 text-xs text-gray-400 bg-white px-2 py-1 rounded">
+                {bio.length}/200
+              </div>
+              <div className="absolute top-3 right-3 flex space-x-1">
+                <span className="text-gray-300">🏀</span>
+                <span className="text-gray-300">😊</span>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex justify-between">
-            <a
-              href="/onboarding/step1"
-              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Back
-            </a>
-            <a
-              href="/onboarding/step3"
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+
+          {/* Location */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              LOCATION
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiMapPin className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="block w-full pl-10 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all"
+                placeholder="Where are you based?"
+              />
+            </div>
+          </div>
+
+          {/* Website/Portfolio */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              WEBSITE / PORTFOLIO
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiLink className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                className="block w-full pl-10 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all"
+                placeholder="LinkedIn / Hudl / Portfolio URL"
+              />
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="pt-4 space-y-3">
+            <button
+              type="submit"
+              className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl text-base font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             >
               Next
-            </a>
+              <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/onboarding/step3')}
+              className="w-full text-center text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Skip for now
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

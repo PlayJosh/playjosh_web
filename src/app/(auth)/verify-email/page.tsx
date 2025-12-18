@@ -36,9 +36,10 @@ export default function VerifyEmail() {
         } else {
           setMessage('Please check your email for a verification link.')
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Verification error:', err)
-        setError(err.message || 'Failed to verify email. The link may be invalid or expired.')
+        const errorMessage = err instanceof Error ? err.message : 'Failed to verify email. The link may be invalid or expired.'
+        setError(errorMessage)
       } finally {
         setLoading(false)
       }
@@ -48,7 +49,7 @@ export default function VerifyEmail() {
   }, [searchParams])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
           Verify Your Email
