@@ -82,9 +82,10 @@ export default function Step1() {
       // Update user metadata to indicate step 1 is completed
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          onboarding_started: true,
-          onboarding_step: 'step1_completed',
-          ...user.user_metadata // Preserve existing metadata
+          ...user.user_metadata, // Preserve existing metadata
+          onboarding_status: 'step1_completed',
+          full_name: fullName,
+          user_type: userType
         }
       })
       if (updateError) throw updateError

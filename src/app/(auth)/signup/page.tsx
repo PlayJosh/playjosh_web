@@ -30,7 +30,8 @@ export default function SignUpPage() {
         options: {
           data: {
             full_name: fullName,
-            onboarding_completed: false,
+            onboarding_status: 'not_started',
+            onboarding_completed: false
           },
         },
       })

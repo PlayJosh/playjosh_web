@@ -11,6 +11,7 @@ export default function Step2() {
   const [location, setLocation] = useState('');
   const [website, setWebsite] = useState('');
   const [profileStrength, setProfileStrength] = useState(60);
+  const [errors, setErrors] = useState<{bio?: string}>({});
 
 useEffect(() => {
   const checkSession = async () => {
@@ -37,29 +38,52 @@ useEffect(() => {
 }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user?.email) throw new Error('Not authenticated');
+    e.preventDefault();
+    
+    // Validate form
+    const newErrors: {bio?: string} = {};
+    
+    if (!bio.trim()) {
+      newErrors.bio = 'Please tell us about yourself';
+    }
+    
+    setErrors(newErrors);
+    
+    // If there are errors, don't proceed
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+    
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user?.email) throw new Error('Not authenticated');
 
-    const { error } = await supabase
-      .from('profiles_step2')
-      .upsert({
-        email: user.email,
-        bio,
-        location,
-        portfolio: website  
+      const { error } = await supabase
+        .from('profiles_step2')
+        .upsert({
+          email: user.email,
+          bio: bio.trim(),
+          location: location.trim(),
+          portfolio: website.trim()
+        });
+
+      if (error) throw error;
+
+      // Update user metadata to indicate step 2 is completed
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          ...user.user_metadata, // Preserve existing metadata
+          onboarding_status: 'step2_completed'
+        }
       });
+      if (updateError) throw updateError;
 
-    if (error) throw error;
-
-    router.push('/onboarding/step3');
-  } catch (err) {
-    console.error('Error saving profile:', err);
-    // You might want to show an error message to the user here
-  }
-};
+      router.push('/onboarding/step3');
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      // You might want to show an error message to the user here
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -133,13 +157,16 @@ useEffect(() => {
                     setProfileStrength(60);
                   }
                 }}
-                className="block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all h-32 resize-none"
+                className={`block w-full px-4 py-3 border-2 ${errors.bio ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all h-32 resize-none`}
                 placeholder="Tell us about your playstyle..."
                 maxLength={200}
               />
               <div className="absolute bottom-2 right-2 text-xs text-gray-400 bg-white px-2 py-1 rounded">
                 {bio.length}/200
               </div>
+              {errors.bio && (
+                <p className="mt-1 text-sm text-red-600">{errors.bio}</p>
+              )}
               <div className="absolute top-3 right-3 flex space-x-1">
                 <span className="text-gray-300">🏀</span>
                 <span className="text-gray-300">😊</span>
