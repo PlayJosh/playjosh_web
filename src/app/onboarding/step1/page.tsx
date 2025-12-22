@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { FiArrowLeft, FiCamera, FiSearch, FiX } from 'react-icons/fi'
 import { FaFutbol, FaUserTie, FaHeart } from 'react-icons/fa'
 import { supabase } from '@/lib/supabase/client'
+import Image from 'next/image'
+
 
 type UserType = 'player' | 'coach' | 'fan' | null
 type Tag = { id: string; name: string }
@@ -14,6 +16,9 @@ export default function Step1() {
   const [fullName, setFullName] = useState('')
   const [userType, setUserType] = useState<UserType>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
@@ -31,6 +36,33 @@ export default function Step1() {
     setAvailableTags(availableTags.filter((t) => t.id !== tag.id))
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image size should be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setSelectedImage(event.target?.result as string);
+      setUploadError(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleTagRemove = (tagId: string) => {
     const tagToRemove = selectedTags.find((tag) => tag.id === tagId)
     if (!tagToRemove) return
@@ -39,64 +71,96 @@ export default function Step1() {
     setAvailableTags([...availableTags, tagToRemove])
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fullName || !userType || selectedTags.length < 3) return
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setUploadError(null);
+  console.log('Form submission started');
 
+  try {
+    // 1. Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log('User data:', { user, authError });
     
+    if (authError || !user?.email) {
+      throw new Error('Not authenticated: ' + (authError?.message || 'No user email'));
+    }
 
-    try {
-      const { data, error: authError } = await supabase.auth.getUser()
-      const user = data.user
-      if (authError || !user?.email) throw new Error('Not authenticated')
+    let imageUrl = null;
+    const file = fileInputRef.current?.files?.[0];
+    console.log('Selected file:', file ? 'File selected' : 'No file selected');
 
-      const profilePayload: Record<string, unknown> = {
-        email: user.email,
+    if (selectedImage && file) {
+      try {
+        console.log('Starting file upload...');
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        console.log('Generated filename:', fileName);
+
+        // 2. Upload to storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        console.log('Upload response:', { uploadData, uploadError });
+        if (uploadError) throw uploadError;
+
+        // 3. Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-photos')
+          .getPublicUrl(fileName);
+        
+        imageUrl = publicUrl;
+        console.log('Generated public URL:', publicUrl);
+      } catch (err) {
+        const error = err as Error;
+        console.error('Upload failed:', error);
+        throw new Error('Failed to upload image: ' + (error.message || 'Unknown error'));
+      }
+    }
+
+    // 4. Update profile
+    console.log('Updating profile with image URL:', imageUrl);
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .update({
         full_name: fullName,
         role: userType,
-        onboarding_complete: false,
-        profile_photo: null,
-      }
-
-      const profilesStep1 = supabase.from('profiles_step1') as unknown as {
-        upsert: (values: unknown) => Promise<{ error: unknown }>
-      }
-
-      const { error: profileError } = await profilesStep1.upsert(profilePayload)
-      if (profileError) throw profileError
-
-      const sportsPayload: Record<string, unknown>[] = selectedTags.map((tag) => ({
-        email: user.email,
-        sport: tag.name,
-      }))
-
-      await supabase.from('user_sports').delete().eq('email', user.email)
-
-      const userSports = supabase.from('user_sports') as unknown as {
-        insert: (values: unknown[]) => Promise<{ error: unknown }>
-      }
-
-      const { error: sportsError } = await userSports.insert(sportsPayload)
-      if (sportsError) throw sportsError
-
-      // Update user metadata to indicate step 1 is completed
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          ...user.user_metadata, // Preserve existing metadata
-          onboarding_status: 'step1_completed',
-          full_name: fullName,
-          user_type: userType
-        }
+        sports: selectedTags.map(tag => tag.name),
+        profile_photo: imageUrl,
+        onboarding_status: 'step1_completed',
+        updated_at: new Date().toISOString()
       })
-      if (updateError) throw updateError
+      .eq('email', user.email)
+      .select();
 
-      router.push('/onboarding/step2')
-    } catch (err: unknown) {
-      console.error('Error saving data:', err)
-      
+    console.log('Profile update response:', { profileData, profileError });
+    if (profileError) throw profileError;
+
+    // 5. Update auth metadata
+    const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+      data: {
+        ...user.user_metadata,
+        onboarding_status: 'step1_completed',
+        full_name: fullName,
+        user_type: userType,
+        profile_photo: imageUrl
+      }
+    });
+
+    console.log('Auth update response:', { updateData, updateError });
+    if (updateError) throw updateError;
+
+    console.log('All updates successful, redirecting...');
+    router.push('/onboarding/step2');
+  } catch (err) {
+    const error = err as Error;
+    console.error('Error in handleSubmit:', error);
+    setUploadError(error.message || 'Failed to save profile. Please try again.');
   }
-}
-
+};
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <header className="mb-10">
@@ -122,24 +186,48 @@ export default function Step1() {
         <div className="flex flex-col items-center mb-10">
           <div className="relative w-36 h-36 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center mb-3 bg-white hover:border-indigo-500 transition-colors group">
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              onChange={(e) => {
-                console.log(e.target.files?.[0]);
-              }}
+              onChange={handleImageUpload}
             />
-            <div className="text-center group-hover:text-indigo-500 transition-colors">
-              <FiCamera className="mx-auto text-gray-400 group-hover:text-indigo-500 mb-2" size={32} />
-              <span className="text-sm text-gray-500 group-hover:text-indigo-600">ADD PHOTO</span>
-            </div>
+            {selectedImage ? (
+              <div className="w-full h-full rounded-full overflow-hidden">
+               <Image
+  src={selectedImage}
+  alt="Profile preview"
+  fill
+  className="object-cover"
+/>
+              </div>
+            ) : (
+              <div className="text-center group-hover:text-indigo-500 transition-colors">
+                <FiCamera className="mx-auto text-gray-400 group-hover:text-indigo-500 mb-2" size={32} />
+                <span className="text-sm text-gray-500 group-hover:text-indigo-600">ADD PHOTO</span>
+              </div>
+            )}
           </div>
-          <button
-            type="button"
-            className="bg-indigo-500 text-white rounded-full p-2.5 absolute mt-28 ml-28 shadow-lg hover:bg-indigo-600 transition-colors"
-          >
-            <FiCamera size={18} />
-          </button>
+          {selectedImage ? (
+            <button
+              type="button"
+              onClick={removeImage}
+              className="bg-red-500 text-white rounded-full p-2 absolute mt-28 ml-28 shadow-lg hover:bg-red-600 transition-colors z-20"
+            >
+              <FiX size={18} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-indigo-500 text-white rounded-full p-2.5 absolute mt-28 ml-28 shadow-lg hover:bg-indigo-600 transition-colors"
+            >
+              <FiCamera size={18} />
+            </button>
+          )}
+          {uploadError && (
+            <p className="text-red-500 text-sm text-center mt-2">{uploadError}</p>
+          )}
         </div>
 
         {/* Full Name */}

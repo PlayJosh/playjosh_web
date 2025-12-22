@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
+// import type { Database } from '@/lib/supabase/database.types'
+
+
+
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -24,7 +28,7 @@ export default function SignUpPage() {
     try {
 
       // 1. Sign up the user with email and password
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -33,12 +37,35 @@ export default function SignUpPage() {
             onboarding_status: 'not_started',
             onboarding_completed: false
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
       if (signUpError) throw signUpError
+      if (!authData.user) throw new Error('Failed to create user')
 
-      // 2. If signup is successful, redirect to verification page
+      // // 2. Create profile in profiles table
+      // const { error: profileError } = await supabase
+      //   .from('profiles')
+      //   .upsert({
+      //     email: authData.user.email,
+      //     full_name: fullName,
+      //     role: null,
+      //     bio: null,
+      //     location: null,
+      //     portfolio: null,
+      //     sports: [],
+      //     profile_photo: null,
+      //     onboarding_status: 'not_started',
+      //     updated_at: new Date().toISOString()
+      //   }as any)
+
+       
+        
+
+      // if (profileError) throw profileError
+
+      // 3. If signup is successful, redirect to verification page
       router.push('/verify-email')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during signup'

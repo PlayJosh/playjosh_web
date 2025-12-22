@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import type { Database } from '@/lib/supabase/database.types';
 import { FiArrowLeft, FiMapPin, FiLink } from 'react-icons/fi';
 
 export default function Step2() {
@@ -58,21 +59,24 @@ useEffect(() => {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user?.email) throw new Error('Not authenticated');
 
+      // Update the profile with step 2 data
       const { error } = await supabase
-        .from('profiles_step2')
-        .upsert({
-          email: user.email,
+        .from('profiles')
+        .update({
           bio: bio.trim(),
           location: location.trim(),
-          portfolio: website.trim()
-        });
+          portfolio: website.trim(),
+          onboarding_status: 'step2_completed',
+          updated_at: new Date().toISOString()
+        } as Partial<Database['public']['Tables']['profiles']['Update']>)
+        .eq('email', user.email);
 
       if (error) throw error;
 
-      // Update user metadata to indicate step 2 is completed
+      // Update auth metadata
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          ...user.user_metadata, // Preserve existing metadata
+          ...user.user_metadata,
           onboarding_status: 'step2_completed'
         }
       });
@@ -81,7 +85,8 @@ useEffect(() => {
       router.push('/onboarding/step3');
     } catch (err) {
       console.error('Error saving profile:', err);
-      // You might want to show an error message to the user here
+      // Show error message to the user
+      setErrors({ bio: 'Failed to save profile. Please try again.' });
     }
   };
 
