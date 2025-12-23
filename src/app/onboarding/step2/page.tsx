@@ -64,7 +64,6 @@ useEffect(() => {
         .from('profiles')
         .update({
           bio: bio.trim(),
-          location: location.trim(),
           portfolio: website.trim(),
           onboarding_status: 'step2_completed',
           updated_at: new Date().toISOString()
@@ -176,25 +175,6 @@ useEffect(() => {
                 <span className="text-gray-300">🏀</span>
                 <span className="text-gray-300">😊</span>
               </div>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-800">
-              LOCATION
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiMapPin className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="block w-full pl-10 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all"
-                placeholder="Where are you based?"
-              />
             </div>
           </div>
 

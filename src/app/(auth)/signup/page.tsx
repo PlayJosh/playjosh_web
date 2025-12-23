@@ -25,6 +25,20 @@ export default function SignUpPage() {
     setLoading(true)
     setError(null)
 
+    // Password validation
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+
+    // Password strength validation
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      setLoading(false)
+      return
+    }
+
     try {
 
       // 1. Sign up the user with email and password

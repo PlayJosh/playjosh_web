@@ -194,14 +194,41 @@ export default function Step3() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-10">
+      {/* <div className="mb-10">
         <button
           onClick={() => router.back()}
           className="text-gray-700 hover:text-gray-900 transition-colors"
         >
           <FiArrowLeft size={24} />
         </button>
-      </div>
+      </div> */}
+      <header className="mb-10">
+  <button 
+    onClick={() => router.back()}
+    className="text-gray-700 hover:text-gray-900 transition-colors"
+  >
+    <FiArrowLeft size={28} />
+  </button>
+  <div className="mt-6">
+    <div className="flex justify-between items-center mb-2 px-4">
+      {[1, 2, 3].map((step) => (
+        <div key={step} className="flex-1 flex flex-col items-center">
+          <div 
+            className={`
+              w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
+              ${step === 3 ? 'bg-indigo-500 text-white shadow-md' : 'bg-white text-gray-400 border-2 border-gray-200'}
+            `}
+          >
+            {step}
+          </div>
+          {step < 3 && (
+            <div className={`h-1.5 w-full mt-4 ${step < 3 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</header>
 
       <div className="max-w-md mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-3">

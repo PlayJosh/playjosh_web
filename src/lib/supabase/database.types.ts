@@ -48,6 +48,7 @@
 export type Profile = {
   email: string; // 🔥 PRIMARY KEY
   full_name: string;
+  age: number | null; // Added age field
 
   role: 'player' | 'coach' | 'fan' | null;
   bio: string | null;
