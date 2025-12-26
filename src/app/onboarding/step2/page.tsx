@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
-import { FiArrowLeft, FiMapPin, FiLink } from 'react-icons/fi';
+import { FiArrowLeft, FiMapPin } from 'react-icons/fi';
 
 export default function Step2() {
   const router = useRouter();
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
-  const [website, setWebsite] = useState('');
+  const [playingLevel, setPlayingLevel] = useState<string>('');
   const [profileStrength, setProfileStrength] = useState(60);
-  const [errors, setErrors] = useState<{bio?: string}>({});
+  const [errors, setErrors] = useState<{bio?: string, playingLevel?: string}>({});
 
 useEffect(() => {
   const checkSession = async () => {
@@ -42,10 +42,14 @@ useEffect(() => {
     e.preventDefault();
     
     // Validate form
-    const newErrors: {bio?: string} = {};
+    const newErrors: {bio?: string, playingLevel?: string} = {};
     
     if (!bio.trim()) {
       newErrors.bio = 'Please tell us about yourself';
+    }
+    
+    if (!playingLevel) {
+      newErrors.playingLevel = 'Please select your playing level';
     }
     
     setErrors(newErrors);
@@ -64,7 +68,7 @@ useEffect(() => {
         .from('profiles')
         .update({
           bio: bio.trim(),
-          portfolio: website.trim(),
+          playing_level: playingLevel,
           onboarding_status: 'step2_completed',
           updated_at: new Date().toISOString()
         } as Partial<Database['public']['Tables']['profiles']['Update']>)
@@ -139,11 +143,42 @@ useEffect(() => {
           </div>
           <p className="text-sm text-gray-600">
             {profileStrength}% complete • 
-            <span className="text-indigo-600 font-medium"> Add bio to hit 80%!</span>
+            {profileStrength < 80 && (
+              <span className="text-indigo-600 font-medium"> Add bio to hit 80%!</span>
+            )}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Playing Level */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              YOUR PLAYING LEVEL 
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {['beginner', 'intermediate', 'advanced'].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => {
+                    setPlayingLevel(level);
+                    // Playing level selection doesn't affect profile strength
+                  }}
+                  className={`py-3 px-2 rounded-xl border-2 transition-all text-sm font-medium ${
+                    playingLevel === level
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {level.charAt(0).toUpperCase() + level.slice(1)}
+                </button>
+              ))}
+            </div>
+            {errors?.playingLevel && (
+              <p className="mt-1 text-sm text-red-600">{errors.playingLevel}</p>
+            )}
+          </div>
+
           {/* Bio */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-800">
@@ -155,11 +190,8 @@ useEffect(() => {
                 onChange={(e) => {
                   setBio(e.target.value);
                   // Update profile strength based on bio length
-                  if (e.target.value.length > 0 && profileStrength < 80) {
-                    setProfileStrength(80);
-                  } else if (e.target.value.length === 0) {
-                    setProfileStrength(60);
-                  }
+                  // Only update profile strength based on bio
+                  setProfileStrength(e.target.value.length > 0 ? 80 : 60);
                 }}
                 className={`block w-full px-4 py-3 border-2 ${errors.bio ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all h-32 resize-none`}
                 placeholder="Tell us about your playstyle..."
@@ -172,32 +204,13 @@ useEffect(() => {
                 <p className="mt-1 text-sm text-red-600">{errors.bio}</p>
               )}
               <div className="absolute top-3 right-3 flex space-x-1">
-                <span className="text-gray-300">🏀</span>
-                <span className="text-gray-300">😊</span>
-              </div>
+            <span className="text-gray-300">🏀</span>
+            <span className="text-gray-300">😊</span>
+          </div>
             </div>
           </div>
 
-          {/* Website/Portfolio */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-800">
-              WEBSITE / PORTFOLIO
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiLink className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="block w-full pl-10 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all"
-                placeholder="LinkedIn / Hudl / Portfolio URL"
-              />
-            </div>
-          </div>
-
-          {/* Buttons */}
+{/* Buttons */}
           <div className="pt-4 space-y-3">
             <button
               type="submit"

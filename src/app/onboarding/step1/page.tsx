@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { FiArrowLeft, FiCamera, FiSearch, FiX, FiMapPin } from 'react-icons/fi'
 import { FaFutbol, FaUserTie, FaHeart } from 'react-icons/fa'
@@ -20,18 +20,24 @@ export default function Step1() {
   const [locationError, setLocationError] = useState<string | null>(null)
   const [userType, setUserType] = useState<UserType>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   
-
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [availableTags, setAvailableTags] = useState<Tag[]>([
+    { id: '1', name: 'Soccer' },
+    { id: '2', name: 'Fitness' },
     { id: '3', name: 'Basketball' },
     { id: '4', name: 'Tennis' },
     { id: '5', name: 'Swimming' },
-    { id: '1', name: 'Soccer' },
-    { id: '2', name: 'Fitness' },
+    { id: '6', name: 'Running' },
+    { id: '7', name: 'Cycling' },
+    { id: '8', name: 'Yoga' },
+    { id: '9', name: 'Volleyball' },
+    { id: '10', name: 'Badminton' },
   ])
 
   const getLocation = async () => {
@@ -100,6 +106,8 @@ export default function Step1() {
     if (selectedTags.length >= 5) return
     setSelectedTags([...selectedTags, tag])
     setAvailableTags(availableTags.filter((t) => t.id !== tag.id))
+    setSearchQuery('')
+    setIsDropdownOpen(false)
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +144,20 @@ export default function Step1() {
     setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId))
     setAvailableTags([...availableTags, tagToRemove])
   }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -471,12 +493,12 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
 
         {/* Sports & Tags */}
-        <div className="space-y-3">
+        <div className="space-y-3" ref={dropdownRef}>
           <div className="flex justify-between items-center">
             <label className="block text-sm font-semibold text-gray-800">
               SPORTS & TAGS <span className="text-red-500">*</span>
             </label>
-            <span className="text-xs text-gray-500 font-medium">3-5 required</span>
+            <span className="text-xs text-gray-500 font-medium">Select 1 or more</span>
           </div>
           
           <div className="relative">
@@ -486,56 +508,72 @@ const handleSubmit = async (e: React.FormEvent) => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                if (!isDropdownOpen) setIsDropdownOpen(true)
+              }}
+              onFocus={() => setIsDropdownOpen(true)}
               className="block w-full pl-10 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all"
-              placeholder="Search interests (e.g. Soccer, HIIT)"
+              placeholder="Search and select sports (e.g. Soccer, Tennis)"
             />
+            
+            {/* Dropdown */}
+            {isDropdownOpen && availableTags.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                {availableTags
+                  .filter(tag => 
+                    tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((tag) => (
+                    <div
+                      key={tag.id}
+                      onClick={() => handleTagSelect(tag)}
+                      className="cursor-pointer select-none relative py-3 pl-3 pr-9 hover:bg-indigo-50 text-gray-900"
+                    >
+                      <div className="flex items-center">
+                        <span className="font-normal block truncate">
+                          {tag.name}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           {/* Selected Tags */}
-          <div className="flex flex-wrap gap-2 pt-2">
-            {selectedTags.map((tag) => (
-              <div
-                key={tag.id}
-                className="flex items-center bg-indigo-100 rounded-full px-4 py-2 text-sm"
-              >
-                <span className="text-indigo-800 font-medium">{tag.name}</span>
-                <button
-                  type="button"
-                  onClick={() => handleTagRemove(tag.id)}
-                  className="ml-2 text-indigo-500 hover:text-indigo-700"
-                >
-                  <FiX size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Available Tags */}
-          <div className="flex flex-wrap gap-2 pt-2">
-            {availableTags
-              .filter(tag =>
-                tag.name.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((tag) => (
-                <button
+          <div className="flex flex-wrap gap-2 pt-2 min-h-[44px]">
+            {selectedTags.length > 0 ? (
+              selectedTags.map((tag) => (
+                <div
                   key={tag.id}
-                  type="button"
-                  onClick={() => handleTagSelect(tag)}
-                  className="bg-white border-2 border-gray-200 rounded-full px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-indigo-300 transition-colors"
+                  className="flex items-center bg-indigo-100 rounded-full px-4 py-2 text-sm"
                 >
-                  {tag.name}
-                </button>
-              ))}
+                  <span className="text-indigo-800 font-medium">{tag.name}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleTagRemove(tag.id)
+                    }}
+                    className="ml-2 text-indigo-500 hover:text-indigo-700"
+                  >
+                    <FiX size={16} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 italic">No sports selected</p>
+            )}
           </div>
         </div>
 
         {/* Next Button */}
         <button
           type="submit"
-          disabled={!fullName || !age || !location.trim() || !userType || selectedTags.length < 3}
+          disabled={!fullName || !age || !location.trim() || !userType || selectedTags.length === 0}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-white text-base transition-all ${
-            fullName && age && location.trim() && userType && selectedTags.length >= 3
+            fullName && age && location.trim() && userType && selectedTags.length > 0
               ? 'bg-indigo-500 hover:bg-indigo-600 shadow-md hover:shadow-lg'
               : 'bg-gray-300 cursor-not-allowed'
           }`}
