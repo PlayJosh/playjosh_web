@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import type { Database } from '@/lib/supabase/database.types';
-import { FiArrowLeft, FiMapPin } from 'react-icons/fi';
+import type { Database } from '@/types/database.types';
+import { FiArrowLeft} from 'react-icons/fi';
 
 export default function Step2() {
   const router = useRouter();
   const [bio, setBio] = useState('');
-  const [location, setLocation] = useState('');
+  // const [location, setLocation] = useState('');
   const [playingLevel, setPlayingLevel] = useState<string>('');
   const [profileStrength, setProfileStrength] = useState(60);
   const [errors, setErrors] = useState<{bio?: string, playingLevel?: string}>({});

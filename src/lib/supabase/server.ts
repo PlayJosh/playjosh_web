@@ -1,7 +1,7 @@
 import { createServerClient as createSupabaseServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { CookieOptions } from '@supabase/ssr'
-import type { Database } from '@/types/supabase'
+import type { Database } from '@/types/database.types'
 
 
 // Create a client that can be used in Server Components

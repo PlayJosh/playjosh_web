@@ -16,88 +16,52 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
-          avatar_url: string | null
-          email: string | null
-          full_name: string | null
-          id: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          email?: string | null
-          full_name?: string | null
-          id: string
-        }
-        Update: {
-          avatar_url?: string | null
-          email?: string | null
-          full_name?: string | null
-          id?: string
-        }
-        Relationships: []
-      }
-      profiles_step1: {
-        Row: {
-          created_at: string | null
-          email: string
-          full_name: string
-          onboarding_complete: boolean | null
-          profile_photo: string | null
-          role: string
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          full_name: string
-          onboarding_complete?: boolean | null
-          profile_photo?: string | null
-          role: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          full_name?: string
-          onboarding_complete?: boolean | null
-          profile_photo?: string | null
-          role?: string
-        }
-        Relationships: []
-      }
-      profiles_step2: {
-        Row: {
+          age: number | null
           bio: string | null
-          created_at: string | null
+          created_at: string
           email: string
+          full_name: string | null
+          hear_about_us: string | null
           location: string | null
-          portfolio: string | null
+          onboarding_status: string
+          playing_level: string | null
+          profile_photo: string | null
+          purposes: string[] | null
+          role: string | null
+          sports: string[] | null
+          updated_at: string
         }
         Insert: {
+          age?: number | null
           bio?: string | null
-          created_at?: string | null
+          created_at?: string
           email: string
+          full_name?: string | null
+          hear_about_us?: string | null
           location?: string | null
-          portfolio?: string | null
+          onboarding_status?: string
+          playing_level?: string | null
+          profile_photo?: string | null
+          purposes?: string[] | null
+          role?: string | null
+          sports?: string[] | null
+          updated_at?: string
         }
         Update: {
+          age?: number | null
           bio?: string | null
-          created_at?: string | null
+          created_at?: string
           email?: string
+          full_name?: string | null
+          hear_about_us?: string | null
           location?: string | null
-          portfolio?: string | null
-        }
-        Relationships: []
-      }
-      user_sports: {
-        Row: {
-          email: string
-          sport: string
-        }
-        Insert: {
-          email: string
-          sport: string
-        }
-        Update: {
-          email?: string
-          sport?: string
+          onboarding_status?: string
+          playing_level?: string | null
+          profile_photo?: string | null
+          purposes?: string[] | null
+          role?: string | null
+          sports?: string[] | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -238,4 +202,4 @@ export const Constants = {
   public: {
     Enums: {},
   },
-} as const   
+} as const
