@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      profile_goals: {
+        Row: {
+          created_at: string
+          goal: string
+          goal_type: string
+          profile_email: string
+        }
+        Insert: {
+          created_at?: string
+          goal: string
+          goal_type: string
+          profile_email: string
+        }
+        Update: {
+          created_at?: string
+          goal?: string
+          goal_type?: string
+          profile_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_profile_goals"
+            columns: ["profile_email"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["email"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: number | null
@@ -21,6 +50,7 @@ export type Database = {
           created_at: string
           email: string
           full_name: string | null
+          headline: string | null
           hear_about_us: string | null
           location: string | null
           onboarding_status: string
@@ -37,6 +67,7 @@ export type Database = {
           created_at?: string
           email: string
           full_name?: string | null
+          headline?: string | null
           hear_about_us?: string | null
           location?: string | null
           onboarding_status?: string
@@ -53,6 +84,7 @@ export type Database = {
           created_at?: string
           email?: string
           full_name?: string | null
+          headline?: string | null
           hear_about_us?: string | null
           location?: string | null
           onboarding_status?: string

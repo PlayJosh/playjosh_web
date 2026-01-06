@@ -1,16 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-// import Image from 'next/image'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar } from 'react-icons/fi'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiTarget, FiClock } from 'react-icons/fi'
 import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
+import type { Goal } from './goals/page' // Updated import path
 
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
   age?: number | null;
-  sports?: string[] | null; // Changed to match the actual data structure
+  sports?: string[] | null;
+  goals?: Goal[] | null;
 }
 
 // Sports icons mapping
@@ -30,26 +33,26 @@ const getSportIcon = (sportName: string) => {
 
 // Mock data for achievements and certifications
 const achievements = [
-  { 
+  {
     id: 1,
-    title: '5K Run Champion', 
-    date: '2023', 
+    title: '5K Run Champion',
+    date: '2023',
     description: '1st place in City Marathon',
     type: 'achievement',
     icon: '🏆'
   },
-  { 
+  {
     id: 2,
-    title: 'Basketball Tournament', 
-    date: '2022', 
+    title: 'Basketball Tournament',
+    date: '2022',
     description: 'MVP of the season',
     type: 'achievement',
     icon: '🏀'
   },
-  { 
+  {
     id: 3,
-    title: 'Advanced Sports Nutrition', 
-    date: '2023', 
+    title: 'Advanced Sports Nutrition',
+    date: '2023',
     description: 'Certified by Sports Nutrition Association',
     type: 'certification',
     icon: '📜',
@@ -59,10 +62,10 @@ const achievements = [
     expiryDate: 'Jun 2025',
     skills: ['Nutrition Planning', 'Diet Management', 'Performance Diet']
   },
-  { 
+  {
     id: 4,
-    title: 'Fitness Trainer Certification', 
-    date: '2023', 
+    title: 'Fitness Trainer Certification',
+    date: '2023',
     description: 'Certified Personal Trainer',
     type: 'certification',
     icon: '💪',
@@ -71,10 +74,10 @@ const achievements = [
     issueDate: 'Mar 2023',
     skills: ['Fitness Assessment', 'Program Design', 'Injury Prevention']
   },
-  { 
+  {
     id: 5,
-    title: '100-Day Fitness Challenge', 
-    date: '2023', 
+    title: '100-Day Fitness Challenge',
+    date: '2023',
     description: 'Successfully completed the challenge',
     type: 'achievement',
     icon: '🔥'
@@ -87,75 +90,136 @@ export default function ProfilePage() {
   const [imageError, setImageError] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [showAllAchievements, setShowAllAchievements] = useState(false)
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loadingGoals, setLoadingGoals] = useState(true);
 
   useEffect(() => {
     const loadProfile = async () => {
-     
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+          throw new Error('User not found');
+        }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        // Get the profile data
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', user.email)
+          .single();
 
-      if (!session?.user?.email) {
-        setLoading(false)
-        return
-      }
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          throw profileError;
+        }
 
-      // Get the profile data including the sports field
-      const { data, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', session.user.email)
-        .single();
-      
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        throw profileError;
-      }
-      
-      // Parse the sports data based on its type
-      if (data) {
-        // If sports is a string, try to parse it as JSON
-        if (typeof data.sports === 'string') {
-          try {
-            data.sports = JSON.parse(data.sports);
-          } catch (e) {
-            console.error('Error parsing sports data:', e);
+        // Parse the sports data if needed
+        if (data) {
+          if (typeof data.sports === 'string') {
+            try {
+              data.sports = JSON.parse(data.sports);
+            } catch (e) {
+              console.error('Error parsing sports data:', e);
+              data.sports = [];
+            }
+          }
+          if (!Array.isArray(data.sports)) {
             data.sports = [];
           }
         }
-        // Ensure sports is an array
-        if (!Array.isArray(data.sports)) {
-          data.sports = [];
+
+        // Update profile state without affecting goals
+        setProfile(prevProfile => ({
+          ...data,
+          // Preserve the existing goals if they exist
+          goals: prevProfile?.goals || []
+        }));
+
+        // Handle profile photo
+        if (data?.profile_photo) {
+          let url = data.profile_photo;
+          if (!url.startsWith('http')) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('profile-photos')
+              .getPublicUrl(data.profile_photo);
+            url = publicUrl;
+          }
+          setImageUrl(`${url}?t=${Date.now()}`);
         }
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+      } finally {
+        setLoading(false);
       }
-
-      // If there's a profile photo, construct the full URL
-      if (data?.profile_photo) {
-        let url = data.profile_photo;
-        // If it's not a full URL, construct it
-        if (!url.startsWith('http')) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('profile-photos')
-            .getPublicUrl(data.profile_photo);
-          url = publicUrl;
-        }
-        // Add a cache-busting query parameter to ensure fresh images
-        setImageUrl(`${url}?t=${Date.now()}`);
-      }
-
-      if (profileError) {
-        console.error('Profile fetch error:', profileError);
-        setProfile(null);
-      } else {
-        setProfile(data);
-      }
-
-      setLoading(false)
     }
 
-    loadProfile()
+    const loadGoals = async () => {
+      try {
+        setLoadingGoals(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+          setGoals([]);
+          return;
+        }
+
+        console.log('Fetching goals for:', user.email);
+
+        const { data, error } = await supabase
+          .from('profile_goals')
+          .select('*')
+          .eq('profile_email', user.email)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+
+        console.log('Fetched goals:', data);
+
+        if (data && data.length > 0) {
+          // Ensure proper typing of the goals
+          const typedGoals = data.map(goal => ({
+            ...goal,
+            goal_type: goal.goal_type === 'long_term' ? 'long_term' as const : 'short_term' as const
+          }));
+
+          console.log('Typed goals:', typedGoals);
+          setGoals(typedGoals);
+        } else {
+          setGoals([]);
+        }
+      } catch (error) {
+        console.error('Error loading goals:', error);
+        setGoals([]);
+      } finally {
+        setLoadingGoals(false);
+      }
+    }
+
+    const fetchData = async () => {
+      try {
+        await loadProfile();
+        await loadGoals();
+      } catch (error) {
+        console.error('Error in fetchData:', error);
+      }
+    };
+
+    let isMounted = true;
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [])
+
+  // Add this useEffect for debugging
+  useEffect(() => {
+    console.log('Current goals state:', goals);
+  }, [goals]);
 
   /* ---------- STATES ---------- */
 
@@ -184,88 +248,146 @@ export default function ProfilePage() {
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-black/40 to-transparent"></div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative">
         {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden relative w-full">
+          <Link
+            href="/profile/basicinfo"
+            className="absolute top-4 right-4 text-gray-400 hover:text-blue-600 transition-colors p-2"
+            title="Edit profile"
+          >
+            <FiEdit2 className="h-5 w-5" />
+          </Link>
           <div className="p-6">
-            <div className="flex flex-col md:flex-row items-center md:items-start">
-              {/* Profile Photo */}
-              <div className="relative -mt-7 mb-4 md:mb-0 md:mr-6">
-                <div className="h-44 w-44 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden">
+            <div className="flex flex-col md:flex-row">
+              {/* Profile Photo - Left Side */}
+              <div className="shrink-0 flex justify-start mb-6 md:mb-0 md:mr-8">
+                <div className="h-40 w-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden">
                   {imageUrl && !imageError ? (
-                    <>
-                      <img
-                        src={imageUrl}
-                        alt="Profile"
-                        className="object-cover w-full h-full"
-                        onError={() => setImageError(true)}
-                      />
-                    </>
+                    <img
+                      src={imageUrl}
+                      alt="Profile"
+                      className="object-cover w-full h-full"
+                      onError={() => setImageError(true)}
+                    />
                   ) : (
                     <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-                      <FiUser className="text-gray-400 text-6xl" />
+                      <FiUser className="text-gray-400 text-5xl" />
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Profile Info */}
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {profile.full_name || 'Sports Enthusiast'}
-                </h1>
-                
-                {profile.role && (
-                  <p className="text-lg text-gray-600 mt-1">
-                    {profile.role} • Sports Enthusiast
-                  </p>
-                )}
-                
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-2">
-                  {profile.location && (
-                    <div className="flex items-center text-gray-500">
-                      <FiMapPin className="mr-1" />
-                      <span>{profile.location}</span>
-                    </div>
-                  )}
-                  {profile.age && (
-                    <div className="flex items-center text-gray-500">
-                      <span>•</span>
-                      <span className="ml-2">{profile.age} years</span>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm">
-                    <FiActivity className="mr-1" /> Active Member
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm">
-                    <FiUsers className="mr-1" /> Team Player
-                  </span>
+              {/* Profile Info - Right Side */}
+              <div className="flex-1">
+                <div className="md:pl-6 w-full">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {profile.full_name || 'Sports Enthusiast'}
+                  </h1>
+
+                  {/* Headline */}
+                  <div className="mt-1 group relative">
+                    {profile.headline ? (
+                      <p className="text-lg text-gray-700">
+                        {profile.headline}
+                      </p>
+                    ) : (
+                      <div className="flex items-center">
+                        <p className="text-lg text-gray-500 italic">
+                          Add a headline to introduce yourself
+                        </p>
+                        <FiEdit2 className="ml-2 h-4 w-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                      </div>
+                    )}
+                    <Link
+                      href="/profile/basicinfo"
+                      className="absolute inset-0"
+                      title={profile.headline ? 'Edit headline' : 'Add headline'}
+                    />
+                  </div>
+
+                  {/* Role • Playing Level */}
+                  <div className="flex items-center text-gray-600 mt-2">
+                    {profile.role && (
+                      <span className="font-medium">{profile.role}</span>
+                    )}
+                    {profile.playing_level && (
+                      <>
+                        <span className="mx-2">•</span>
+                        <span>{profile.playing_level}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Location • Age */}
+                  <div className="flex items-center text-gray-500 mt-1 -ml-1">
+                    {profile.location && (
+                      <span className="flex items-center">
+                        <FiMapPin className="mr-1" />
+                        <span>{profile.location}</span>
+                      </span>
+                    )}
+                    {profile.age && (
+                      <>
+                        <span className="mx-2">•</span>
+                        <span>{profile.age} years</span>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm">
+                      <FiActivity className="mr-1" /> Active Member
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm">
+                      <FiUsers className="mr-1" /> Team Player
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Bio Section */}
-            {profile.bio && (
-              <div className="mt-6 border-t border-gray-200 pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">About</h2>
-                <p className="text-gray-700">{profile.bio}</p>
+            <div className="mt-6 border-t border-gray-200 pt-6 w-full">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-lg font-semibold text-gray-900">Bio</h2>
+                <Link
+                  href="/profile/bio"
+                  className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                  title={profile.bio ? 'Edit bio' : 'Add bio'}
+                >
+                  <FiEdit2 className="h-4 w-4" />
+                </Link>
               </div>
-            )}
+              {profile.bio ? (
+                <p className="text-gray-700 whitespace-pre-line">{profile.bio}</p>
+              ) : (
+                <p className="text-gray-500 italic">
+                  No bio added yet. Click the edit button to add one.
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          {/* Left Column */}
-          <div className="md:col-span-2 space-y-6">
+        <div className="w-full mt-6 space-y-6">
+          {/* Main Content - Full Width */}
+          <div className="space-y-6 w-full">
             {/* Sports Interests */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <FaFutbol className="mr-2 text-blue-600" />
-                Sports Interests
-              </h2>
+            <div className="bg-white rounded-lg shadow-md p-6 w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <FaFutbol className="mr-2 text-blue-600" />
+                  Sports Interests
+                </h2>
+                <Link
+                  href="/profile/sports"
+                  className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                  title="Edit sports interests"
+                >
+                  <FiEdit2 className="h-4 w-4" />
+                </Link>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {profile.sports && profile.sports.length > 0 ? (
                   profile.sports.map((sport, index) => (
@@ -284,8 +406,65 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Goals Section */}
+            <div className="bg-white rounded-lg shadow-md p-6 w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <FiTarget className="mr-2 text-indigo-600" />
+                  My Goals
+                </h2>
+                <Link
+                  href="/profile/goals"
+                  className="text-gray-400 hover:text-blue-600 transition-colors p-2"
+                  title="Edit goals"
+                >
+                  <FiEdit2 className="h-5 w-5" />
+                </Link>
+              </div>
+
+              {loadingGoals ? (
+                // Loading state
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-12 bg-gray-100 rounded animate-pulse"></div>
+                  ))}
+                </div>
+              ) : goals.length > 0 ? (
+                // Goals list
+                <div className="space-y-3">
+                  {goals.map((goal) => (
+                    <div
+                      key={`${goal.id}-${goal.goal_type}`}
+                      className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className={`p-2 rounded-full ${goal.goal_type === 'short_term' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}`}>
+                        {goal.goal_type === 'short_term' ? (
+                          <FiClock className="h-4 w-4" />
+                        ) : (
+                          <FiTarget className="h-4 w-4" />
+                        )}
+                      </div>
+                      <p className="ml-3 text-gray-800 line-clamp-1">{goal.goal}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Empty state
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-3">No goals set yet</p>
+                  <Link
+                    href="/profile/goals"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <FiTarget className="-ml-0.5 mr-1.5 h-4 w-4" />
+                    Set Your First Goal
+                  </Link>
+                </div>
+              )}
+            </div>
+
             {/* Achievements & Certifications */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                   <FiAward className="mr-2 text-yellow-500" />
@@ -334,8 +513,11 @@ export default function ProfilePage() {
                             {item.icon}
                           </div>
                           <div className="ml-4">
-                            <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
-                            <p className="text-sm text-gray-500 mt-1">{item.date}</p>
+                            <h1 className="text-2xl font-bold text-gray-900">{profile?.full_name || 'Your Name'}</h1>
+                            <p className="text-gray-700 mt-1">
+                              {profile?.headline || 'Your professional headline or tagline goes here'}
+                            </p>
+                            <p className="text-gray-600 text-sm mt-2">{item.date}</p>
                             <p className="mt-1 text-gray-700">{item.description}</p>
                             <button className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
                               view certificate
@@ -347,10 +529,10 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-              
+
               {!showAllAchievements && achievements.length > 2 && (
                 <div className="mt-6 text-center">
-                  <button 
+                  <button
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     onClick={() => setShowAllAchievements(true)}
                   >
@@ -363,92 +545,83 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Goals */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-                🎯 Goals
-              </h2>
-              <div className="space-y-6">
-                {/* Short-term Goal */}
-                <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
-                  <div className="flex">
-                    <div className="shrink-0">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900">Short-term Goal</h3>
-                      <p className="mt-1 text-gray-700">&quot;Want State selection in 6 months&quot;</p>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full w-3/4"></div>
-                        </div>
-                        <p className="text-right text-xs text-gray-500 mt-1">75% progress</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          </div>
 
-                {/* Long-term Goal */}
-                <div className="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
-                  <div className="flex">
-                    <div className="shrink-0">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-100 text-purple-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900">Long-term Goal</h3>
-                      <p className="mt-1 text-gray-700">&quot;Want to Represent India at national level&quot;</p>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-purple-600 h-2 rounded-full w-1/3"></div>
-                        </div>
-                        <p className="text-right text-xs text-gray-500 mt-1">33% progress</p>
-                      </div>
-                    </div>
+          {/* Goals Section */}
+          {/* <div className="bg-white rounded-lg shadow-md p-6 w-full">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <h2 className="ml-3 text-xl font-semibold text-gray-900">My Goals</h2>
+              </div>
+              <Link 
+                href="/profile/goals"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                title="Edit goals"
+              >
+                <FiEdit2 className="mr-1.5 h-4 w-4" />
+                Edit
+              </Link>
+            </div>
+
+            <div className="text-center py-8 px-4 bg-linear-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-200">
+              <div className="mx-auto w-20 h-20 mb-4 flex items-center justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-100 rounded-full opacity-20 animate-pulse"></div>
+                  <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-blue-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
                 </div>
               </div>
+              <h3 className="text-lg font-medium text-gray-900">No goals set yet</h3>
+              <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">
+                Set your sports goals to track your progress and stay motivated on your journey.
+              </p>
+              <div className="mt-6">
+                <Link
+                  href="/profile/goals"
+                  className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="-ml-1 mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                  Add Your First Goal
+                </Link>
+              </div>
             </div>
-          </div>
+          </div> */}
 
-          
-           
-          
-            {/* Upcoming Events */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <FiCalendar className="mr-2 text-purple-500" />
-                Upcoming Events
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="shrink-0 bg-purple-100 rounded-lg p-2">
-                    <div className="text-center">
-                      <div className="text-sm font-semibold text-purple-800">JAN</div>
-                      <div className="text-lg font-bold text-purple-600">15</div>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Basketball Tournament</h3>
-                    <p className="text-sm text-gray-500">9:00 AM - 2:00 PM</p>
-                    <p className="mt-1 text-sm text-gray-600">Downtown Sports Complex</p>
+          {/* Upcoming Events */}
+          {/* <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <FiCalendar className="mr-2 text-purple-500" />
+              Upcoming Events
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-start">
+                <div className="shrink-0 bg-purple-100 rounded-lg p-2">
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-purple-800">JAN</div>
+                    <div className="text-lg font-bold text-purple-600">15</div>
                   </div>
                 </div>
-                <div className="flex items-start">
-                  <div className="shrink-0 bg-blue-100 rounded-lg p-2">
-                    <div className="text-center">
-                      <div className="text-sm font-semibold text-blue-800">JAN</div>
-                      <div className="text-lg font-bold text-blue-600">22</div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-gray-900">Basketball Tournament</h3>
+                  <p className="text-sm text-gray-500">9:00 AM - 2:00 PM</p>
+                  <p className="mt-1 text-sm text-gray-600">Downtown Sports Complex</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <div className="shrink-0 bg-blue-100 rounded-lg p-2">
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-blue-800">JAN</div>
+                    <div className="text-lg font-bold text-blue-600">22</div>
                     </div>
                   </div>
                   <div className="ml-4">
@@ -456,11 +629,11 @@ export default function ProfilePage() {
                     <p className="text-sm text-gray-500">6:00 AM - 8:00 AM</p>
                     <p className="mt-1 text-sm text-gray-600">Riverside Park</p>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                </div> */}
+          {/* </div> */}
+          {/* </div> */}
         </div>
       </div>
+    </div>
   )
 }
