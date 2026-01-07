@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiTarget, FiClock } from 'react-icons/fi'
+import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiTarget, FiClock, FiX } from 'react-icons/fi'
 import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
@@ -92,6 +92,7 @@ export default function ProfilePage() {
   const [showAllAchievements, setShowAllAchievements] = useState(false)
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -262,7 +263,10 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row">
               {/* Profile Photo - Left Side */}
               <div className="shrink-0 flex justify-start mb-6 md:mb-0 md:mr-8">
-                <div className="h-40 w-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden">
+                <div 
+                  className="h-40 w-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => imageUrl && !imageError && setIsPhotoModalOpen(true)}
+                >
                   {imageUrl && !imageError ? (
                     <img
                       src={imageUrl}
@@ -634,6 +638,34 @@ export default function ProfilePage() {
           {/* </div> */}
         </div>
       </div>
+
+      {/* Profile Photo Modal */}
+      {isPhotoModalOpen && imageUrl && !imageError && (
+        <div 
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300"
+          onClick={() => setIsPhotoModalOpen(false)}
+        >
+          <div 
+            className="relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors p-2"
+              onClick={() => setIsPhotoModalOpen(false)}
+              aria-label="Close"
+            >
+              <FiX className="h-6 w-6" />
+            </button>
+            <div className="h-80 w-80 md:h-96 md:w-96 rounded-full border-8 border-white shadow-2xl overflow-hidden transform transition-all duration-300 animate-fadeIn">
+              <img 
+                src={imageUrl} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
