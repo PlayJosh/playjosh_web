@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FiArrowLeft, FiUpload, FiX, FiAward } from 'react-icons/fi'
+import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 import Link from 'next/link'
 import type { Database } from '@/types/database.types'
@@ -55,9 +56,10 @@ export default function EditAchievement() {
           setPreviewUrl(data.certificate_url)
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching achievement:', err)
-      setError(err.message || 'Failed to load achievement')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load achievement'
+      setError(errorMessage)
     }
   }
 
@@ -142,9 +144,10 @@ export default function EditAchievement() {
       }
 
       router.push('/profile')
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error saving achievement:', err)
-      setError(err.message || 'Failed to save achievement')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save achievement'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -290,11 +293,16 @@ export default function EditAchievement() {
                     <span className="text-xs font-medium text-red-700">PDF</span>
                   </div>
                 ) : (
-                  <img 
-                    src={previewUrl} 
-                    alt="Certificate preview" 
-                    className="h-12 w-auto object-cover rounded"
-                  />
+                  <div className="relative h-12 w-12">
+                    <Image
+                      src={previewUrl}
+                      alt="Certificate preview"
+                      fill
+                      className="object-cover rounded"
+                      sizes="48px"
+                      priority={false}
+                    />
+                  </div>
                 )}
               </div>
             )}

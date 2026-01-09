@@ -118,9 +118,10 @@ export default function AddEditAchievement({ params }: { params: { id?: string }
       }
 
       router.push('/profile')
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error saving achievement:', err)
-      setError(err.message || 'Failed to save achievement')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save achievement'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

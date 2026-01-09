@@ -46,9 +46,10 @@ export default function AchievementsList() {
       if (error) throw error
 
       setAchievements(data || [])
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching achievements:', err)
-      setError(err.message || 'Failed to load achievements')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load achievements'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -67,9 +68,10 @@ export default function AchievementsList() {
 
       // Refresh the list
       fetchAchievements()
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error deleting achievement:', err)
-      setError(err.message || 'Failed to delete achievement')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete achievement'
+      setError(errorMessage)
     }
   }
 
