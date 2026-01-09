@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiTarget, FiClock, FiX } from 'react-icons/fi'
+import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX } from 'react-icons/fi'
 import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
@@ -31,65 +31,13 @@ const getSportIcon = (sportName: string) => {
   return <FaFutbol className="text-gray-500" />; // Default icon
 };
 
-// Mock data for achievements and certifications
-const achievements = [
-  {
-    id: 1,
-    title: '5K Run Champion',
-    date: '2023',
-    description: '1st place in City Marathon',
-    type: 'achievement',
-    icon: '🏆'
-  },
-  {
-    id: 2,
-    title: 'Basketball Tournament',
-    date: '2022',
-    description: 'MVP of the season',
-    type: 'achievement',
-    icon: '🏀'
-  },
-  {
-    id: 3,
-    title: 'Advanced Sports Nutrition',
-    date: '2023',
-    description: 'Certified by Sports Nutrition Association',
-    type: 'certification',
-    icon: '📜',
-    issuer: 'Sports Nutrition Association',
-    credentialId: 'SNA-2023-45678',
-    issueDate: 'Jun 2023',
-    expiryDate: 'Jun 2025',
-    skills: ['Nutrition Planning', 'Diet Management', 'Performance Diet']
-  },
-  {
-    id: 4,
-    title: 'Fitness Trainer Certification',
-    date: '2023',
-    description: 'Certified Personal Trainer',
-    type: 'certification',
-    icon: '💪',
-    issuer: 'International Sports Sciences Association',
-    credentialId: 'ISSA-78901',
-    issueDate: 'Mar 2023',
-    skills: ['Fitness Assessment', 'Program Design', 'Injury Prevention']
-  },
-  {
-    id: 5,
-    title: '100-Day Fitness Challenge',
-    date: '2023',
-    description: 'Successfully completed the challenge',
-    type: 'achievement',
-    icon: '🔥'
-  },
-]
+import AchievementsList from './components/AchievementsList'
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [imageError, setImageError] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [showAllAchievements, setShowAllAchievements] = useState(false)
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -409,7 +357,6 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-
             {/* Goals Section */}
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-4">
@@ -417,13 +364,22 @@ export default function ProfilePage() {
                   <FiTarget className="mr-2 text-indigo-600" />
                   My Goals
                 </h2>
-                <Link
-                  href="/profile/goals"
-                  className="text-gray-400 hover:text-blue-600 transition-colors p-2"
-                  title="Edit goals"
-                >
-                  <FiEdit2 className="h-5 w-5" />
-                </Link>
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href="/profile/goals"
+                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    title="Add new goal"
+                  >
+                    <FiPlus className="h-5 w-5" />
+                  </Link>
+                  <Link
+                    href="/profile/goals"
+                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    title="Edit goals"
+                  >
+                    <FiEdit2 className="h-5 w-5" />
+                  </Link>
+                </div>
               </div>
 
               {loadingGoals ? (
@@ -474,85 +430,30 @@ export default function ProfilePage() {
                   <FiAward className="mr-2 text-yellow-500" />
                   Achievements & Certifications
                 </h2>
+                <div className="flex items-center space-x-2">
+                  <Link 
+                    href="/profile/achievements/edit"
+                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    title="Add new achievement"
+                  >
+                    <FiPlus className="h-5 w-5" />
+                    <span className="sr-only">Add New</span>
+                  </Link>
+                  
+                </div>
               </div>
 
               <div className="space-y-6">
-                {achievements.slice(0, showAllAchievements ? achievements.length : 2).map((item) => (
-                  <div key={item.id} className="achievement-item border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                    {item.type === 'certification' ? (
-                      <div className="p-5">
-                        <div className="flex items-start">
-                          <div className="shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl">
-                            {item.icon}
-                          </div>
-                          <div className="ml-4 flex-1">
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Verified
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">{item.issuer}</p>
-                            <p className="text-sm text-gray-500 mt-1">Issued {item.issueDate} • {item.credentialId}</p>
-                            {item.expiryDate && (
-                              <p className="text-sm text-amber-600 mt-1">Expires {item.expiryDate}</p>
-                            )}
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {item.skills?.map((skill, idx) => (
-                                <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  {skill}
-                                </span>
-                              ))}
-                            </div>
-                            <button className="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium">
-                              View Certificate
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-5">
-                        <div className="flex items-start">
-                          <div className="shrink-0 h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center text-2xl">
-                            {item.icon}
-                          </div>
-                          <div className="ml-4">
-                            <h1 className="text-2xl font-bold text-gray-900">{profile?.full_name || 'Your Name'}</h1>
-                            <p className="text-gray-700 mt-1">
-                              {profile?.headline || 'Your professional headline or tagline goes here'}
-                            </p>
-                            <p className="text-gray-600 text-sm mt-2">{item.date}</p>
-                            <p className="mt-1 text-gray-700">{item.description}</p>
-                            <button className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
-                              view certificate
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {!showAllAchievements && achievements.length > 2 && (
-                <div className="mt-6 text-center">
-                  <button
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    onClick={() => setShowAllAchievements(true)}
-                  >
-                    View All Achievements & Certifications
-                    <svg className="ml-2 -mr-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
+                <div className="mt-8">
+                  <AchievementsList />
                 </div>
-              )}
+              </div>
             </div>
 
           </div>
 
           {/* Goals Section */}
-          {/* <div className="bg-white rounded-lg shadow-md p-6 w-full">
+          {/* <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center">
                 <div className="p-2 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg">

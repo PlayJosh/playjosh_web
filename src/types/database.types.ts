@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      profile_achievements: {
+        Row: {
+          certificate_url: string | null
+          created_at: string
+          description: string | null
+          level: string
+          profile_email: string
+          sport: string
+          title: string
+          year: number
+        }
+        Insert: {
+          certificate_url?: string | null
+          created_at?: string
+          description?: string | null
+          level: string
+          profile_email: string
+          sport: string
+          title: string
+          year: number
+        }
+        Update: {
+          certificate_url?: string | null
+          created_at?: string
+          description?: string | null
+          level?: string
+          profile_email?: string
+          sport?: string
+          title?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_profile_achievements"
+            columns: ["profile_email"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["email"]
+          },
+        ]
+      }
       profile_goals: {
         Row: {
           created_at: string
