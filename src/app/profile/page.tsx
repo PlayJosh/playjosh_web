@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX } from 'react-icons/fi'
+import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX, FiCamera } from 'react-icons/fi'
 import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
@@ -32,6 +32,7 @@ const getSportIcon = (sportName: string) => {
 };
 
 import AchievementsList from './components/AchievementsList'
+import CoverPhoto from './components/CoverPhoto'
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -41,6 +42,7 @@ export default function ProfilePage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -50,12 +52,17 @@ export default function ProfilePage() {
           throw new Error('User not found');
         }
 
-        // Get the profile data
+        // Get the profile data with cover photo
         const { data, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('email', user.email)
           .single();
+
+        // Set cover photo URL if it exists
+        if (data?.cover_photo) {
+          setCoverPhotoUrl(data.cover_photo);
+        }
 
         if (profileError) {
           console.error('Error fetching profile:', profileError);
@@ -188,14 +195,38 @@ export default function ProfilePage() {
     )
   }
 
+  const handleCoverPhotoUpload = async (url: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) return;
+
+      // Update the profile with the new cover photo URL
+      const { error } = await supabase
+        .from('profiles')
+        .update({ cover_photo: url || null })
+        .eq('email', user.email);
+
+      if (error) throw error;
+
+      // Update local state
+      setCoverPhotoUrl(url || null);
+      
+      // If there's an existing profile, update its cover photo
+      setProfile(prev => prev ? { ...prev, cover_photo: url || null } : null);
+    } catch (error) {
+      console.error('Error updating cover photo:', error);
+    }
+  };
+
   /* ---------- UI ---------- */
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Cover Photo */}
-      <div className="h-72 bg-gray-200 relative">
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-black/40 to-transparent"></div>
-      </div>
+      <CoverPhoto 
+        coverPhotoUrl={coverPhotoUrl} 
+        onUpload={handleCoverPhotoUpload} 
+      />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative">
         {/* Profile Header */}
