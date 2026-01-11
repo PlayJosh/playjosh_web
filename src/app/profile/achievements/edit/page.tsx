@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi'
 import Image from 'next/image'
@@ -10,7 +10,7 @@ import type { Database } from '@/types/database.types'
 
 type Achievement = Database['public']['Tables']['profile_achievements']['Row']
 
-export default function EditAchievement() {
+function EditAchievementForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const title = searchParams.get('title')
@@ -337,5 +337,22 @@ export default function EditAchievement() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function EditAchievement() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-sm">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <EditAchievementForm />
+    </Suspense>
   )
 }
