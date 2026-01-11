@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX, FiCamera } from 'react-icons/fi'
-import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer } from 'react-icons/fa'
+import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX, FiCamera, FiAward as FiTrophy, FiTarget as FiGoal, FiAward as FiMedal, FiAward as FiStar } from 'react-icons/fi'
+import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer, FaTrophy, FaMedal, FaStar, FaBullseye } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
@@ -317,15 +317,6 @@ export default function ProfilePage() {
                       </>
                     )}
                   </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm">
-                      <FiActivity className="mr-1" /> Active Member
-                    </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm">
-                      <FiUsers className="mr-1" /> Team Player
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -360,7 +351,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <FaFutbol className="mr-2 text-blue-600" />
+                  <FaTrophy className="mr-2 text-yellow-500" />
                   Sports Interests
                 </h2>
                 <Link
@@ -392,7 +383,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <FiTarget className="mr-2 text-indigo-600" />
+                  <FaBullseye className="mr-2 text-red-500" />
                   My Goals
                 </h2>
                 <div className="flex items-center space-x-2">
@@ -458,7 +449,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <FiAward className="mr-2 text-yellow-500" />
+                  <FaMedal className="mr-2 text-amber-500" />
                   Achievements & Certifications
                 </h2>
                 <div className="flex items-center space-x-2">

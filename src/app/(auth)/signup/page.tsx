@@ -96,7 +96,7 @@ export default function SignUpPage() {
           Join PlayJosh
         </h2>
         <p className="mt-3 text-center text-base text-gray-700">
-          Start your sports journey with us
+          Enhance  your sports journey with us
         </p>
       </div>
 
@@ -244,7 +244,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <div className="text-sm text-center text-gray-600 p-4 bg-gray-50 rounded-lg border border-gray-100">
+            {/* <div className="text-sm text-center text-gray-600 p-4 bg-gray-50 rounded-lg border border-gray-100">
               {isLoading ? 'Creating account...' : 'Create account'}he PlayJosh{' '}
               <a href="#" className="font-medium text-indigo-700 hover:text-indigo-600 transition-colors duration-200">
                 User Agreement
@@ -253,7 +253,7 @@ export default function SignUpPage() {
               <a href="#" className="font-medium text-indigo-700 hover:text-indigo-600 transition-colors duration-200">
                 Privacy Policy
               </a>.
-            </div>
+            </div> */}
 
             <div>
               <button
@@ -265,7 +265,7 @@ export default function SignUpPage() {
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </span>
-                Agree & Join
+                Join
               </button>
             </div>
           </form>
