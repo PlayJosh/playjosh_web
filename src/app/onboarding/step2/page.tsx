@@ -155,24 +155,27 @@ useEffect(() => {
             <label className="block text-sm font-semibold text-gray-800">
               YOUR PLAYING LEVEL 
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {['beginner', 'intermediate', 'advanced'].map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  onClick={() => {
-                    setPlayingLevel(level);
-                    // Playing level selection doesn't affect profile strength
-                  }}
-                  className={`py-3 px-2 rounded-xl border-2 transition-all text-sm font-medium ${
-                    playingLevel === level
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {level.charAt(0).toUpperCase() + level.slice(1)}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {['Beginner', 'Intercity', 'District', 'State', 'National'].map((level) => {
+                const levelLower = level.toLowerCase();
+                return (
+                  <button
+                    key={levelLower}
+                    type="button"
+                    onClick={() => {
+                      setPlayingLevel(levelLower);
+                      // Playing level selection doesn't affect profile strength
+                    }}
+                    className={`py-3 px-2 rounded-xl border-2 transition-all text-sm font-medium ${
+                      playingLevel === levelLower
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {level}
+                  </button>
+                );
+              })}
             </div>
             {errors?.playingLevel && (
               <p className="mt-1 text-sm text-red-600">{errors.playingLevel}</p>

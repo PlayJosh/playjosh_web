@@ -1,10 +1,53 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiCamera, FiSave, FiUser } from 'react-icons/fi'
+import { FiCamera, FiSave, FiUser, FiX } from 'react-icons/fi'
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
+
+// Helper function to create a circular image
+const createCircularImage = (image: HTMLImageElement, size: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    
+    // Set canvas size to match the desired output size
+    canvas.width = size;
+    canvas.height = size;
+    
+    // Create a circular clipping path
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    
+    // Calculate aspect ratio and draw the image
+    const aspect = image.width / image.height;
+    let drawWidth, drawHeight, offsetX, offsetY;
+    
+    if (aspect > 1) {
+      // Image is wider than tall
+      drawHeight = size;
+      drawWidth = size * aspect;
+      offsetX = (size - drawWidth) / 2;
+      offsetY = 0;
+    } else {
+      // Image is taller than wide or square
+      drawWidth = size;
+      drawHeight = size / aspect;
+      offsetX = 0;
+      offsetY = (size - drawHeight) / 2;
+    }
+    
+    // Draw the image
+    ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+    
+    // Return the data URL
+    resolve(canvas.toDataURL('image/png'));
+  });
+};
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -26,6 +69,13 @@ export default function EditBasicInfoPage() {
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [position, setPosition] = useState({ x: 50, y: 50 })
+  const [scale, setScale] = useState(1)
+  const [isAdjusting, setIsAdjusting] = useState(false)
+  const [tempImage, setTempImage] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -52,10 +102,16 @@ export default function EditBasicInfoPage() {
           })
           
           if (data.profile_photo) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('profile-photos')
-              .getPublicUrl(data.profile_photo)
-            setPreviewUrl(publicUrl)
+            // If it's already a full URL, use it directly
+            if (data.profile_photo.startsWith('http')) {
+              setPreviewUrl(data.profile_photo);
+            } else {
+              // Otherwise, get the public URL from Supabase
+              const { data: { publicUrl } } = supabase.storage
+                .from('profile-photos')
+                .getPublicUrl(data.profile_photo);
+              setPreviewUrl(publicUrl);
+            }
           }
         }
       } catch (err) {
@@ -77,12 +133,97 @@ export default function EditBasicInfoPage() {
     }))
   }
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
-      setProfilePhoto(file)
-      setPreviewUrl(URL.createObjectURL(file))
-      setImageError(false)
+      const reader = new FileReader()
+      
+      reader.onload = (event) => {
+        const img = new Image()
+        img.onload = () => {
+          // Calculate initial scale to fit the image in the container
+          const containerSize = 400 // Approximate size of the container
+          const scale = Math.min(
+            containerSize / img.width,
+            containerSize / img.height,
+            1 // Don't scale up small images
+          )
+          
+          // Set the original image and initial scale/position
+          setTempImage(event.target?.result as string)
+          setIsAdjusting(true)
+          setPosition({ x: 50, y: 50 }) // Center position
+          setScale(scale * 0.9) // Slightly smaller than container to ensure full visibility
+        }
+        img.src = event.target?.result as string
+      }
+      
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !containerRef.current) return
+    
+    const container = containerRef.current.getBoundingClientRect()
+    const x = ((e.clientX - container.left) / container.width) * 100
+    const y = ((e.clientY - container.top) / container.height) * 100
+    
+    // Limit the position to keep the image within the container
+    setPosition({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y))
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    const newScale = Math.max(0.5, Math.min(2, scale + (e.deltaY > 0 ? -0.1 : 0.1)))
+    setScale(newScale)
+  }
+
+  const handleSaveAdjustment = async () => {
+    if (tempImage) {
+      const img = new Image()
+      img.src = tempImage
+      
+      await new Promise<void>((resolve) => {
+        img.onload = async () => {
+          // Create a circular version of the image after adjustment
+          const circularImage = await createCircularImage(img, 800) // Increased size for better quality
+          setPreviewUrl(circularImage)
+          
+          // Convert data URL to blob for file upload
+          fetch(circularImage)
+            .then(res => res.blob())
+            .then(blob => {
+              const file = new File([blob], 'profile-photo.png', { type: 'image/png' })
+              setProfilePhoto(file)
+            })
+            .finally(() => {
+              setIsAdjusting(false)
+              setTempImage(null)
+              resolve()
+            })
+        }
+      })
+    }
+  }
+
+  const handleCancelAdjustment = () => {
+    setIsAdjusting(false)
+    setTempImage(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -106,22 +247,29 @@ export default function EditBasicInfoPage() {
 
       let photoUrl = null
 
-      // Upload new profile photo if selected
+          // Upload new profile photo if selected
       if (profilePhoto) {
-        const fileExt = profilePhoto.name.split('.').pop()
-        const fileName = `${user.id}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+        const fileExt = 'png' // Always use png since we're converting to png
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`
+        const filePath = `public/${fileName}`
+        
         const { error: uploadError } = await supabase.storage
           .from('profile-photos')
-          .upload(`public/${fileName}`, profilePhoto)
+          .upload(filePath, profilePhoto, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: 'image/png'
+          })
 
         if (uploadError) throw uploadError
 
         // Get public URL of the uploaded file
         const { data: { publicUrl } } = supabase.storage
           .from('profile-photos')
-          .getPublicUrl(`public/${fileName}`)
+          .getPublicUrl(filePath)
         
-        photoUrl = `public/${fileName}`
+        // Store the full public URL in the database
+        photoUrl = publicUrl
       }
 
       // Update profile
@@ -160,11 +308,11 @@ export default function EditBasicInfoPage() {
   }
 
   const playingLevels = [
-    'Beginner',
-    'Intercity',
-    'District ',
-    'State ',
-    'National'
+    'beginner',
+    'intercity',
+    'district',
+    'state',
+    'national'
   ]
 
   return (
@@ -190,7 +338,7 @@ export default function EditBasicInfoPage() {
           <form onSubmit={handleSubmit} className="p-6 space-y-8">
             {/* Profile Photo */}
             <div className="flex flex-col items-center sm:flex-row sm:items-start space-y-6 sm:space-y-0 sm:space-x-8">
-              <div className="relative group">
+              <div className="relative">
                 <div className="h-36 w-36 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden">
                   {previewUrl && !imageError ? (
                     <img
@@ -211,7 +359,8 @@ export default function EditBasicInfoPage() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={handlePhotoChange}
+                    onChange={handleFileSelect}
+                    ref={fileInputRef}
                   />
                 </label>
               </div>
@@ -221,6 +370,76 @@ export default function EditBasicInfoPage() {
                 <p className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. Max size 5MB</p>
               </div>
             </div>
+
+            {/* Image Adjustment Modal */}
+            {isAdjusting && tempImage && (
+              <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-xl p-6 w-full max-w-md">
+                  
+                  <div 
+                    ref={containerRef}
+                    className="relative w-full aspect-square rounded-full overflow-hidden border-2 border-dashed border-gray-300 mb-4 bg-gray-100"
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onWheel={handleWheel}
+                  >
+                    <div className="relative w-full h-full overflow-hidden">
+                      <img
+                        src={tempImage}
+                        alt="Preview"
+                        className="absolute top-0 left-0 w-full h-full object-contain cursor-move"
+                        style={{
+                          transform: `translate(calc(-50% + ${position.x}%), calc(-50% + ${position.y}%)) scale(${scale})`,
+                          transformOrigin: 'center center',
+                          transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+                          minWidth: '100%',
+                          minHeight: '100%',
+                          maxWidth: 'none',
+                          maxHeight: 'none',
+                          willChange: 'transform'
+                        }}
+                      />
+                    </div>
+                    <div className="absolute inset-0 rounded-full border-4 border-white shadow-inner pointer-events-none"></div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-4 px-2">
+                    <span className="text-sm text-gray-600">Zoom</span>
+                    <div className="w-32">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={scale}
+                        onChange={(e) => setScale(parseFloat(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                    <span className="text-sm text-gray-600">{Math.round(scale * 100)}%</span>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={handleCancelAdjustment}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveAdjustment}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Full Name */}
             <div className="border-t border-gray-200 pt-6">
