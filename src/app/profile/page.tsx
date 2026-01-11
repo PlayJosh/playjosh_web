@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX, FiCamera, FiAward as FiTrophy, FiTarget as FiGoal, FiAward as FiMedal, FiAward as FiStar } from 'react-icons/fi'
-import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer, FaTrophy, FaMedal, FaStar, FaBullseye } from 'react-icons/fa'
+import Image from 'next/image'
+import { FiUser, FiMapPin, FiEdit2, FiPlus, FiTarget, FiClock, FiX } from 'react-icons/fi'
+import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer, FaTrophy, FaBullseye, FaMedal } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
@@ -163,13 +163,7 @@ export default function ProfilePage() {
       }
     };
 
-    let isMounted = true;
-
     fetchData();
-
-    return () => {
-      isMounted = false;
-    };
   }, [])
 
   // Add this useEffect for debugging
@@ -246,10 +240,12 @@ export default function ProfilePage() {
                   className="h-40 w-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden cursor-pointer transition-transform hover:scale-105"
                   onClick={() => imageUrl && !imageError && setIsPhotoModalOpen(true)}
                 >
-                  {imageUrl && !imageError ? (
-                    <img
+                  {imageUrl && !imageError ? ( 
+                    <Image
                       src={imageUrl}
                       alt="Profile"
+                      width={160}
+                      height={160}
                       className="object-cover w-full h-full"
                       onError={() => setImageError(true)}
                     />

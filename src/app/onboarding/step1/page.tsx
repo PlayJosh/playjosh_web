@@ -1,15 +1,14 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiArrowLeft, FiCamera, FiSearch, FiX, FiMapPin } from 'react-icons/fi'
+import { FiArrowLeft, FiCamera, FiX, FiMapPin } from 'react-icons/fi'
 import { FaFutbol, FaUserTie, FaHeart } from 'react-icons/fa'
 import { supabase } from '@/lib/supabase/client'
 import Image from 'next/image'
 
 
 type UserType = 'player' | 'coach' | 'fan' | null
-type Tag = { id: string; name: string }
 
 export default function Step1() {
   const router = useRouter()
@@ -19,12 +18,9 @@ export default function Step1() {
   const [isLocating, setIsLocating] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [userType, setUserType] = useState<UserType>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const [sports, setSports] = useState('')
 
@@ -371,7 +367,7 @@ export default function Step1() {
                   type="button"
                   onClick={getLocation}
                   disabled={isLocating}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLocating ? (
                     'Locating...'
