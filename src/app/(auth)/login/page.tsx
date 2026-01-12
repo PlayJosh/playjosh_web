@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
-import { FaGoogle } from 'react-icons/fa'
+
 
 function LoginForm() {
   const router = useRouter()
@@ -50,8 +50,9 @@ function LoginForm() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message || 'Error signing in with Google')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

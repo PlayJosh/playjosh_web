@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
-import { FaGoogle } from 'react-icons/fa'
+// Google icon removed as it's not being used
 // import type { Database } from '@/lib/supabase/database.types'
 
 
@@ -21,8 +21,7 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const redirectTo = searchParams.get('redirectTo') || '/onboarding'
+  // success state removed as it's not being used
 
   const handleGoogleSignUp = async () => {
     try {
@@ -41,8 +40,9 @@ export default function SignUpPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message || 'Error signing up with Google')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -52,7 +52,6 @@ export default function SignUpPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    setSuccess(null)
 
     // Password validation
     if (password !== confirmPassword) {
