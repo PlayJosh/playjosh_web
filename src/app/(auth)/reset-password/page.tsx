@@ -44,8 +44,8 @@ export default function ResetPasswordPage() {
                 }
 
                 // If we don't have a valid token in the URL, check if we're already authenticated
-                const { data: { session } } = await supabase.auth.getSession()
-                if (!session) {
+                const { data: { user }, error: authError } = await supabase.auth.getUser()
+                if (authError || !user) {
                     setError('Invalid or expired password reset link')
                 }
                 setLoading(false)

@@ -17,18 +17,19 @@ export default function Step2() {
 useEffect(() => {
   const checkSession = async () => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error) {
-        console.error('Error getting session:', error);
+        console.error('Error getting user:', error);
+        router.push('/login');
         return;
       }
       
-      if (!session) {
-        console.log('No active session, redirecting to login');
+      if (!user) {
+        console.log('No authenticated user, redirecting to login');
         router.push('/login');
       } else {
-        console.log('Session exists:', session.user?.email);
+        console.log('User authenticated:', user.email);
       }
     } catch (err) {
       console.error('Error in session check:', err);
@@ -99,7 +100,7 @@ useEffect(() => {
       <header className="mb-10">
         <button 
           onClick={() =>router.push('/onboarding/step1')}
-          className="text-gray-700 hover:text-gray-900 transition-colors"
+          className="text-gray-700 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiArrowLeft size={28} />
         </button>
@@ -166,7 +167,7 @@ useEffect(() => {
                       setPlayingLevel(levelLower);
                       // Playing level selection doesn't affect profile strength
                     }}
-                    className={`py-3 px-2 rounded-xl border-2 transition-all text-sm font-medium ${
+                    className={`py-3 px-2 rounded-xl border-2 transition-all text-sm font-medium cursor-pointer ${
                       playingLevel === levelLower
                         ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
@@ -196,7 +197,7 @@ useEffect(() => {
                   // Only update profile strength based on bio
                   setProfileStrength(e.target.value.length > 0 ? 80 : 60);
                 }}
-                className={`block w-full px-4 py-3 border-2 ${errors.bio ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all h-32 resize-none`}
+                className={`block w-full px-4 py-3 border-2 ${errors.bio ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all h-32 resize-none cursor-pointer`}
                 placeholder="Tell us about your playstyle..."
                 maxLength={200}
               />
@@ -217,7 +218,7 @@ useEffect(() => {
           <div className="pt-4 space-y-3">
             <button
               type="submit"
-              className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl text-base font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl text-base font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors cursor-pointer"
             >
               Next
               <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -227,7 +228,7 @@ useEffect(() => {
             <button
               type="button"
               onClick={() => router.push('/onboarding/step3')}
-              className="w-full text-center text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+              className="w-full text-center text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
             >
               Skip for now
             </button>

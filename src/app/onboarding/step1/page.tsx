@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiArrowLeft, FiCamera, FiX, FiMapPin } from 'react-icons/fi'
+import { FiArrowLeft, FiCamera, FiX, FiMapPin, FiChevronDown, FiCheck } from 'react-icons/fi'
 import { FaFutbol, FaUserTie, FaHeart } from 'react-icons/fa'
 import { supabase } from '@/lib/supabase/client'
 import Image from 'next/image'
@@ -22,7 +22,66 @@ export default function Step1() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [sports, setSports] = useState('')
+  const [sports, setSports] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  
+  // Common sports list - you can expand this as needed
+  const allSports = [
+  "Cricket",
+  "Football",
+  "Badminton",
+  "Basketball",
+  "Volleyball",
+  "Tennis",
+  "Table Tennis",
+  "Hockey",
+  "Kabaddi",
+  "Athletics / Track & Field",
+  "Swimming",
+  "Boxing",
+  "Wrestling",
+  "Martial Arts",
+  "Gym / Fitness",
+  "Yoga",
+  "Cycling",
+  "Running",
+  "Skating",
+  "Baseball",
+  "Rugby",
+  "Handball",
+  "Archery",
+  "Shooting",
+  "Weightlifting",
+  "Powerlifting",
+  "CrossFit",
+  "Climbing",
+  "Surfing",
+  "Rowing",
+  "Other"
+].sort();
+
+  
+  const filteredSports = allSports.filter(sport => 
+    sport.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) && 
+          inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const getLocation = async () => {
     if (!navigator.geolocation) {
@@ -191,7 +250,7 @@ export default function Step1() {
           age: Number(age),
           location: location.trim(),
           role: userType,
-          sports: sports.split(',').map(s => s.trim()).filter(Boolean),
+          sports: sports,
           profile_photo: imageUrl,
           onboarding_status: 'step1_completed',
           updated_at: new Date().toISOString()
@@ -286,7 +345,7 @@ export default function Step1() {
                   />
                 </div>
               ) : (
-                <div className="text-center group-hover:text-indigo-500 transition-colors">
+                <div className="text-center group-hover:text-indigo-500 transition-colors cursor-pointer">
                   <FiCamera className="mx-auto text-gray-400 group-hover:text-indigo-500 mb-2" size={32} />
                   <span className="text-sm text-gray-500 group-hover:text-indigo-600">ADD PHOTO</span>
                 </div>
@@ -296,7 +355,7 @@ export default function Step1() {
               <button
                 type="button"
                 onClick={removeImage}
-                className="bg-red-500 text-white rounded-full p-2 absolute mt-28 ml-28 shadow-lg hover:bg-red-600 transition-colors z-20"
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors cursor-pointer"
               >
                 <FiX size={18} />
               </button>
@@ -304,7 +363,7 @@ export default function Step1() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-indigo-500 text-white rounded-full p-2.5 absolute mt-28 ml-28 shadow-lg hover:bg-indigo-600 transition-colors"
+                className="absolute -top-2 -right-2 bg-indigo-500 text-white rounded-full p-1 hover:bg-indigo-600 transition-colors cursor-pointer"
               >
                 <FiCamera size={18} />
               </button>
@@ -317,20 +376,20 @@ export default function Step1() {
           {/* Full Name */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-800">
                 Full Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 text-gray-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 border border-gray-300 text-gray-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                 placeholder="Enter your full name"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-800">
                 Age <span className="text-red-500">*</span>
               </label>
               <input
@@ -339,7 +398,7 @@ export default function Step1() {
                 onChange={(e) => setAge(e.target.value ? parseInt(e.target.value) : '')}
                 min="13"
                 max="120"
-                className="w-full px-4 py-3 border text-gray-500 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 border text-gray-500 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                 placeholder="Enter your age"
                 required
               />
@@ -348,7 +407,7 @@ export default function Step1() {
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-800">
                 Location <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -359,7 +418,7 @@ export default function Step1() {
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full pl-10 pr-28 py-3 border text-gray-500 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full pl-10 pr-28 py-3 border text-gray-500 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                   placeholder="Enter your city or area"
                   required
                 />
@@ -367,7 +426,7 @@ export default function Step1() {
                   type="button"
                   onClick={getLocation}
                   disabled={isLocating}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLocating ? (
                     'Locating...'
@@ -440,27 +499,92 @@ export default function Step1() {
             </div>
           </div>
 
-          {/* Sports Input */}
+          {/* Sports Input with Searchable Dropdown */}
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-gray-800">
-              SPORTS <span className="text-red-500">*</span>
+              SPORTS & TAGS <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={sports}
-              onChange={(e) => setSports(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white text-gray-900 placeholder-gray-400 transition-all"
-              placeholder="Enter sports separated by commas (e.g. Soccer, Tennis, Running)"
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">Separate multiple sports with commas</p>
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex flex-wrap gap-2 min-h-[48px] p-2 border-2 border-gray-200 rounded-xl bg-white">
+                {sports.map((sport, index) => (
+                  <div key={index} className="flex items-center bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full">
+                    {sport}
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSports(prev => prev.filter((_, i) => i !== index))
+                      }}
+                      className="ml-2 text-indigo-500 hover:text-indigo-700 focus:outline-none"
+                    >
+                      <FiX size={16} />
+                    </button>
+                  </div>
+                ))}
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    if (!isDropdownOpen) setIsDropdownOpen(true)
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  className="flex-1 min-w-[100px] px-2 py-1 border-0 focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400"
+                  placeholder={sports.length === 0 ? "Search and select sports..." : ""}
+                />
+                <button 
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  <FiChevronDown size={20} className={`transition-transform ${isDropdownOpen ? 'transform rotate-180' : ''}`} />
+                </button>
+              </div>
+              
+              {isDropdownOpen && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                  {filteredSports.length > 0 ? (
+                    <ul className="py-1">
+                      {filteredSports.map((sport) => (
+                        <li key={sport}>
+                          <button
+                            type="button"
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 ${sports.includes(sport) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'}`}
+                            onClick={() => {
+                              if (!sports.includes(sport)) {
+                                setSports(prev => [...prev, sport])
+                              }
+                              setSearchQuery('')
+                              inputRef.current?.focus()
+                            }}
+                          >
+                            {sport}
+                            {sports.includes(sport) && (
+                              <span className="float-right text-indigo-600">
+                                <FiCheck size={16} />
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="px-4 py-2 text-sm text-gray-500">
+                      No sports found. Try a different search.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Start typing to search and select sports</p>
           </div>
 
           {/* Next Button */}
           <button
             type="submit"
-            disabled={!fullName || !age || !location.trim() || !userType || !sports.trim()}
-            className={`w-full py-4 px-6 rounded-xl font-semibold text-white text-base transition-all ${fullName && age && location.trim() && userType && sports.trim()
+            disabled={!fullName || !age || !location.trim() || !userType || sports.length === 0}
+            className={`w-full py-4 px-6 rounded-xl font-semibold text-white text-base transition-all ${fullName && age && location.trim() && userType && sports.length > 0
                 ? 'bg-indigo-500 hover:bg-indigo-600 shadow-md hover:shadow-lg'
                 : 'bg-gray-300 cursor-not-allowed'
               }`}
