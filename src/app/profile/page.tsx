@@ -285,33 +285,35 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* Role • Playing Level */}
-                  <div className="flex items-center text-gray-600 mt-2">
+                  {/* Role - Enhanced Styling */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
                     {profile.role && (
-                      <span className="font-medium">{profile.role}</span>
+                      <span className="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-700 text-sm font-medium rounded-full border border-purple-100">
+                        <span className="whitespace-nowrap capitalize">{profile.role.toLowerCase()}</span>
+                      </span>
                     )}
                     {profile.playing_level && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{profile.playing_level}</span>
-                      </>
+                      <span className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-700 text-sm font-medium rounded-full border border-amber-100">
+                        <span className="whitespace-nowrap">{profile.playing_level}</span>
+                      </span>
                     )}
                   </div>
 
-                  {/* Location • Age */}
-                  <div className="flex items-center text-gray-500 mt-1 -ml-1">
-                    {profile.location && (
-                      <span className="flex items-center">
-                        <FiMapPin className="mr-1" />
-                        <span>{profile.location}</span>
-                      </span>
-                    )}
-                    {profile.age && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{profile.age} years</span>
-                      </>
-                    )}
+                  {/* Location and Age - Simplified Styling */}
+                  <div className="mt-3 text-gray-600 text-sm">
+                    <div className="flex items-center gap-3">
+                      {profile.location && (
+                        <span className="flex items-center">
+                          <FiMapPin className="mr-1.5 h-4 w-4 text-gray-400" />
+                          {profile.location}
+                        </span>
+                      )}
+                      {profile.age && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 bg-gray-50 text-gray-700 rounded-full border border-gray-200 text-xs font-medium">
+                          {profile.age} years
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -375,7 +377,38 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            {/* Goals Section */}
+           
+
+            {/* Achievements & Certifications */}
+            <div className="bg-white rounded-lg shadow-md p-6 w-full">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <FaMedal className="mr-2 text-amber-500" />
+                  Achievements & Certifications
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <Link 
+                    href="/profile/achievements/edit"
+                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    title="Add new achievement"
+                  >
+                    <FiPlus className="h-5 w-5" />
+                    <span className="sr-only">Add New</span>
+                  </Link>
+                  
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="mt-8">
+                  <AchievementsList />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+           {/* Goals Section */}
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -440,35 +473,6 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-
-            {/* Achievements & Certifications */}
-            <div className="bg-white rounded-lg shadow-md p-6 w-full">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <FaMedal className="mr-2 text-amber-500" />
-                  Achievements & Certifications
-                </h2>
-                <div className="flex items-center space-x-2">
-                  <Link 
-                    href="/profile/achievements/edit"
-                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                    title="Add new achievement"
-                  >
-                    <FiPlus className="h-5 w-5" />
-                    <span className="sr-only">Add New</span>
-                  </Link>
-                  
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="mt-8">
-                  <AchievementsList />
-                </div>
-              </div>
-            </div>
-
-          </div>
 
           {/* Goals Section */}
           {/* <div className="bg-white rounded-lg shadow-md p-6">

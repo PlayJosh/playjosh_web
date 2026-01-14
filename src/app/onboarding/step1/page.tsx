@@ -27,56 +27,56 @@ export default function Step1() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  
+
   // Common sports list - you can expand this as needed
   const allSports = [
-  "Cricket",
-  "Football",
-  "Badminton",
-  "Basketball",
-  "Volleyball",
-  "Tennis",
-  "Table Tennis",
-  "Hockey",
-  "Kabaddi",
-  "Athletics / Track & Field",
-  "Swimming",
-  "Boxing",
-  "Wrestling",
-  "Martial Arts",
-  "Gym / Fitness",
-  "Yoga",
-  "Cycling",
-  "Running",
-  "Skating",
-  "Baseball",
-  "Rugby",
-  "Handball",
-  "Archery",
-  "Shooting",
-  "Weightlifting",
-  "Powerlifting",
-  "CrossFit",
-  "Climbing",
-  "Surfing",
-  "Rowing",
-  "Other"
-].sort();
+    "Cricket",
+    "Football",
+    "Badminton",
+    "Basketball",
+    "Volleyball",
+    "Tennis",
+    "Table Tennis",
+    "Hockey",
+    "Kabaddi",
+    "Athletics / Track & Field",
+    "Swimming",
+    "Boxing",
+    "Wrestling",
+    "Martial Arts",
+    "Gym / Fitness",
+    "Yoga",
+    "Cycling",
+    "Running",
+    "Skating",
+    "Baseball",
+    "Rugby",
+    "Handball",
+    "Archery",
+    "Shooting",
+    "Weightlifting",
+    "Powerlifting",
+    "CrossFit",
+    "Climbing",
+    "Surfing",
+    "Rowing",
+    "Other"
+  ].sort();
 
-  
-  const filteredSports = allSports.filter(sport => 
+
+  const filteredSports = allSports.filter(sport =>
     sport.toLowerCase().includes(searchQuery.toLowerCase())
   )
-  
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) && 
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current && !inputRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false)
       }
     }
-    
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -252,7 +252,7 @@ export default function Step1() {
           role: userType,
           sports: sports,
           profile_photo: imageUrl,
-          onboarding_status: 'step1_completed',
+          onboarding_status: 'completed',
           updated_at: new Date().toISOString()
         })
         .eq('email', user.email)
@@ -265,7 +265,7 @@ export default function Step1() {
       const { data: updateData, error: updateError } = await supabase.auth.updateUser({
         data: {
           ...user.user_metadata,
-          onboarding_status: 'step1_completed',
+          onboarding_status: 'completed',
           full_name: fullName,
           user_type: userType,
           profile_photo: imageUrl
@@ -275,8 +275,8 @@ export default function Step1() {
       console.log('Auth update response:', { updateData, updateError });
       if (updateError) throw updateError;
 
-      console.log('All updates successful, redirecting...');
-      router.push('/onboarding/step2');
+      console.log('All updates successful, redirecting to home...');
+      router.push('/Home');
     } catch (err) {
       const error = err as Error;
       console.error('Error in handleSubmit:', error);
@@ -293,30 +293,18 @@ export default function Step1() {
         >
           <FiArrowLeft size={28} />
         </button>
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-2 px-4">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex-1 flex flex-col items-center">
-                <div
-                  className={`
-                    w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium
-                    ${step === 1 ? 'bg-indigo-500 text-white shadow-md' : 'bg-white text-gray-400 border-2 border-gray-200'}
-                  `}
-                >
-                  {step}
-                </div>
-                {step < 3 && (
-                  <div className={`h-1.5 w-full mt-4 ${step < 1 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
-                )}
-              </div>
-            ))}
+        {/* <div className="mt-6">
+          <div className="flex justify-center items-center mb-2 px-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium bg-indigo-500 text-white shadow-md">
+              1
+            </div>
           </div>
-        </div>
+        </div> */}
       </header>
 
       <div className="max-w-md mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
-          {"Let's Get You Set Up for PlayJosh!"}
+          Let&apos;s Get You Set Up for <span className="text-indigo-600">PlayJosh</span>!
         </h1>
         <p className="text-gray-600 mb-10 text-base">
           Build your profile to start connecting with athletes and coaches.
@@ -325,7 +313,7 @@ export default function Step1() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Profile Photo */}
-          <div className="flex flex-col items-center mb-10">
+          <div className="flex flex-col items-center mb-10 relative">
             <div className="relative w-36 h-36 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center mb-3 bg-white hover:border-indigo-500 transition-colors group">
               <input
                 ref={fileInputRef}
@@ -339,8 +327,8 @@ export default function Step1() {
                   <Image
                     src={selectedImage}
                     alt="Profile preview"
-                    width={144}  
-                    height={144} 
+                    width={144}
+                    height={144}
                     className="object-cover w-full h-full"
                   />
                 </div>
@@ -352,21 +340,25 @@ export default function Step1() {
               )}
             </div>
             {selectedImage ? (
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors cursor-pointer"
-              >
-                <FiX size={18} />
-              </button>
+              <div className="absolute bottom-1 right-40 transform translate-x-1/4 translate-y-1/4">
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors cursor-pointer shadow-md"
+                >
+                  <FiX size={16} />
+                </button>
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute -top-2 -right-2 bg-indigo-500 text-white rounded-full p-1 hover:bg-indigo-600 transition-colors cursor-pointer"
-              >
-                <FiCamera size={18} />
-              </button>
+              <div className="absolute bottom-1 right-40 transform translate-x-1/4 translate-y-1/4">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-indigo-500 text-white rounded-full p-2 hover:bg-indigo-600 transition-colors cursor-pointer shadow-md"
+                >
+                  <FiCamera size={16} />
+                </button>
+              </div>
             )}
             {uploadError && (
               <p className="text-red-500 text-sm text-center mt-2">{uploadError}</p>
@@ -411,14 +403,11 @@ export default function Step1() {
                 Location <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMapPin className="h-5 w-5 text-gray-400" />
-                </div>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full pl-10 pr-28 py-3 border text-gray-500 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
+                  className="w-full pl-4 pr-28 py-3 border text-gray-500 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                   placeholder="Enter your city or area"
                   required
                 />
@@ -426,14 +415,11 @@ export default function Step1() {
                   type="button"
                   onClick={getLocation}
                   disabled={isLocating}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm flex items-center"
                 >
-                  {isLocating ? (
-                    'Locating...'
-                  ) : (
+                  {isLocating ? 'Locating...' : (
                     <>
-                      <FiMapPin className="mr-1 h-3 w-3" />
-                      Use Current
+                      <FiMapPin className="h-3.5 w-3.5 mr-1" /> Use Current
                     </>
                   )}
                 </button>
@@ -455,8 +441,8 @@ export default function Step1() {
                 type="button"
                 onClick={() => setUserType('player')}
                 className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 transition-all ${userType === 'player'
-                    ? 'border-indigo-500 bg-indigo-50 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-indigo-300'
+                  ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                  : 'border-gray-200 bg-white hover:border-indigo-300'
                   }`}
               >
                 <FaFutbol
@@ -470,8 +456,8 @@ export default function Step1() {
                 type="button"
                 onClick={() => setUserType('coach')}
                 className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 transition-all ${userType === 'coach'
-                    ? 'border-indigo-500 bg-indigo-50 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-indigo-300'
+                  ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                  : 'border-gray-200 bg-white hover:border-indigo-300'
                   }`}
               >
                 <FaUserTie
@@ -485,8 +471,8 @@ export default function Step1() {
                 type="button"
                 onClick={() => setUserType('fan')}
                 className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 transition-all ${userType === 'fan'
-                    ? 'border-indigo-500 bg-indigo-50 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-indigo-300'
+                  ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                  : 'border-gray-200 bg-white hover:border-indigo-300'
                   }`}
               >
                 <FaHeart
@@ -509,7 +495,7 @@ export default function Step1() {
                 {sports.map((sport, index) => (
                   <div key={index} className="flex items-center bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full">
                     {sport}
-                    <button 
+                    <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
@@ -533,7 +519,7 @@ export default function Step1() {
                   className="flex-1 min-w-[100px] px-2 py-1 border-0 focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400"
                   placeholder={sports.length === 0 ? "Search and select sports..." : ""}
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="text-gray-400 hover:text-gray-600 focus:outline-none"
@@ -541,7 +527,7 @@ export default function Step1() {
                   <FiChevronDown size={20} className={`transition-transform ${isDropdownOpen ? 'transform rotate-180' : ''}`} />
                 </button>
               </div>
-              
+
               {isDropdownOpen && (
                 <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
                   {filteredSports.length > 0 ? (
@@ -585,11 +571,11 @@ export default function Step1() {
             type="submit"
             disabled={!fullName || !age || !location.trim() || !userType || sports.length === 0}
             className={`w-full py-4 px-6 rounded-xl font-semibold text-white text-base transition-all ${fullName && age && location.trim() && userType && sports.length > 0
-                ? 'bg-indigo-500 hover:bg-indigo-600 shadow-md hover:shadow-lg'
-                : 'bg-gray-300 cursor-not-allowed'
+              ? 'bg-indigo-500 hover:bg-indigo-600 shadow-md hover:shadow-lg'
+              : 'bg-gray-300 cursor-not-allowed'
               }`}
           >
-            Next Step
+            Complete Profile
             <span className="ml-2">→</span>
           </button>
         </form>

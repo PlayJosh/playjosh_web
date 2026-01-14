@@ -104,11 +104,12 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-100 to-gray-200 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-2 text-center text-4xl font-bold text-gray-900">
-          Welcome back to PlayJosh
-        </h2>
-        <p className="mt-3 text-center text-base text-gray-700">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <h1 className="text-4xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">
+          <span className="text-black font-black">Welcome back to </span>
+          <span className="text-indigo-600 font-black">PlayJosh</span>
+        </h1>
+        <p className="mt-3 text-lg text-gray-600 leading-relaxed">
           Sign in to continue your sports journey
         </p>
       </div>

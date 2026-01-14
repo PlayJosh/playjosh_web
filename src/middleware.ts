@@ -175,7 +175,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const metadata = user.user_metadata || {}
-    const onboardingCompleted = metadata.onboarding_completed === true
+    const onboardingCompleted = metadata.onboarding_status === 'completed'
 
     // Handle onboarding redirection
     if (!onboardingCompleted && !pathname.startsWith(onboardingRoute)) {

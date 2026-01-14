@@ -76,10 +76,9 @@ export default function SignUpPage() {
         options: {
           data: {
             full_name: fullName,
-            onboarding_status: 'not_started',
-            onboarding_completed: false
+            onboarding_status: 'not_started'
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect_to=/onboarding`,
         },
       })
 
@@ -119,12 +118,13 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-100 to-gray-200 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-2 text-center text-4xl font-bold text-gray-900">
-          Join PlayJosh
-        </h2>
-        <p className="mt-3 text-center text-base text-gray-700">
-          Enhance  your sports journey with us
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-2">
+          <span className="text-black font-black">Join</span>
+          <span className="text-indigo-600 font-black ml-1.5">PlayJosh</span>
+        </h1>
+        <p className="mt-3 text-lg text-gray-600 leading-relaxed">
+          Enhance your sports journey with us
         </p>
       </div>
 
