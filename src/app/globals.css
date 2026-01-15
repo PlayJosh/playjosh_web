@@ -1,26 +1,385 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* PlayJosh Design System
+   A sports-professional networking platform
+   Calm, trustworthy, achievement-focused
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@theme {
+	/* Color system - using HSL values for shadcn/ui compatibility */
+	--color-background: hsl(40 30% 97%);
+	--color-foreground: hsl(210 50% 15%);
+
+	--color-card: hsl(0 0% 100%);
+	--color-card-foreground: hsl(210 50% 15%);
+
+	--color-popover: hsl(0 0% 100%);
+	--color-popover-foreground: hsl(210 50% 15%);
+
+	/* Primary - Deep teal (trust, sports professionalism) */
+	--color-primary: hsl(180 80% 25%);
+	--color-primary-foreground: hsl(0 0% 100%);
+
+	/* Secondary - Sage green (growth, calm) */
+	--color-secondary: hsl(150 25% 92%);
+	--color-secondary-foreground: hsl(150 40% 30%);
+
+	/* Muted - Soft warm gray */
+	--color-muted: hsl(40 20% 94%);
+	--color-muted-foreground: hsl(210 20% 45%);
+
+	/* Accent - Energetic coral (achievements, energy) */
+	--color-accent: hsl(15 85% 55%);
+	--color-accent-foreground: hsl(0 0% 100%);
+
+	/* Success - Verified green */
+	--color-success: hsl(150 60% 40%);
+	--color-success-foreground: hsl(0 0% 100%);
+
+	/* Warning - Pending amber */
+	--color-warning: hsl(40 90% 50%);
+	--color-warning-foreground: hsl(40 90% 15%);
+
+	--color-destructive: hsl(0 72% 51%);
+	--color-destructive-foreground: hsl(0 0% 100%);
+
+	--color-border: hsl(40 20% 90%);
+	--color-input: hsl(40 20% 90%);
+	--color-ring: hsl(180 80% 25%);
+
+	/* Sport level colors - custom utilities */
+	--color-level-school: hsl(200 70% 50%);
+	--color-level-district: hsl(280 60% 55%);
+	--color-level-state: hsl(25 90% 55%);
+	--color-level-national: hsl(340 80% 50%);
+
+	/* Additional custom colors for Tailwind utilities */
+	--level-school: 200 70% 50%;
+	--level-district: 280 60% 55%;
+	--level-state: 25 90% 55%;
+	--level-national: 340 80% 50%;
+
+	/* Reaction colors */
+	--color-reaction-clap: hsl(40 90% 50%);
+	--color-reaction-strong: hsl(15 85% 55%);
+	--color-reaction-medal: hsl(45 100% 50%);
+
+	/* Sidebar colors */
+	--color-sidebar-background: hsl(0 0% 98%);
+	--color-sidebar-foreground: hsl(210 50% 15%);
+	--color-sidebar-primary: hsl(180 80% 25%);
+	--color-sidebar-primary-foreground: hsl(0 0% 100%);
+	--color-sidebar-accent: hsl(150 25% 92%);
+	--color-sidebar-accent-foreground: hsl(150 40% 30%);
+	--color-sidebar-border: hsl(40 20% 90%);
+	--color-sidebar-ring: hsl(180 80% 25%);
+
+	/* Border radius */
+	--radius: 1rem;
+
+	/* Font family */
+	--font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* CSS Variables for shadcn/ui compatibility (using HSL format) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	--background: 40 30% 97%;
+	--foreground: 210 50% 15%;
+
+	--card: 0 0% 100%;
+	--card-foreground: 210 50% 15%;
+
+	--popover: 0 0% 100%;
+	--popover-foreground: 210 50% 15%;
+
+	--primary: 180 80% 25%;
+	--primary-foreground: 0 0% 100%;
+
+	--secondary: 150 25% 92%;
+	--secondary-foreground: 150 40% 30%;
+
+	--muted: 40 20% 94%;
+	--muted-foreground: 210 20% 45%;
+
+	--accent: 15 85% 55%;
+	--accent-foreground: 0 0% 100%;
+
+	--success: 150 60% 40%;
+	--success-foreground: 0 0% 100%;
+
+	--warning: 40 90% 50%;
+	--warning-foreground: 40 90% 15%;
+
+	--destructive: 0 72% 51%;
+	--destructive-foreground: 0 0% 100%;
+
+	--border: 40 20% 90%;
+	--input: 40 20% 90%;
+	--ring: 180 80% 25%;
+
+	--radius: 1rem;
+
+	/* Sport level colors */
+	--level-school: 200 70% 50%;
+	--level-district: 280 60% 55%;
+	--level-state: 25 90% 55%;
+	--level-national: 340 80% 50%;
+
+	/* Reaction colors */
+	--reaction-clap: 40 90% 50%;
+	--reaction-strong: 15 85% 55%;
+	--reaction-medal: 45 100% 50%;
+
+	/* Sidebar */
+	--sidebar-background: 0 0% 98%;
+	--sidebar-foreground: 210 50% 15%;
+	--sidebar-primary: 180 80% 25%;
+	--sidebar-primary-foreground: 0 0% 100%;
+	--sidebar-accent: 150 25% 92%;
+	--sidebar-accent-foreground: 150 40% 30%;
+	--sidebar-border: 40 20% 90%;
+	--sidebar-ring: 180 80% 25%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+	--background: 210 40% 10%;
+	--foreground: 40 20% 95%;
+
+	--card: 210 35% 14%;
+	--card-foreground: 40 20% 95%;
+
+	--popover: 210 35% 14%;
+	--popover-foreground: 40 20% 95%;
+
+	--primary: 175 70% 45%;
+	--primary-foreground: 210 40% 10%;
+
+	--secondary: 150 20% 20%;
+	--secondary-foreground: 150 30% 80%;
+
+	--muted: 210 30% 18%;
+	--muted-foreground: 210 15% 60%;
+
+	--accent: 15 80% 55%;
+	--accent-foreground: 0 0% 100%;
+
+	--success: 150 55% 45%;
+	--success-foreground: 0 0% 100%;
+
+	--warning: 40 85% 55%;
+	--warning-foreground: 40 90% 10%;
+
+	--destructive: 0 65% 45%;
+	--destructive-foreground: 0 0% 100%;
+
+	--border: 210 30% 20%;
+	--input: 210 30% 20%;
+	--ring: 175 70% 45%;
+
+	--sidebar-background: 210 40% 10%;
+	--sidebar-foreground: 40 20% 95%;
+	--sidebar-primary: 175 70% 45%;
+	--sidebar-primary-foreground: 210 40% 10%;
+	--sidebar-accent: 210 30% 18%;
+	--sidebar-accent-foreground: 40 20% 95%;
+	--sidebar-border: 210 30% 20%;
+	--sidebar-ring: 175 70% 45%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@layer base {
+	* {
+		border-color: hsl(var(--border));
+	}
+
+	body {
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
+		font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+		font-feature-settings: normal;
+		font-variation-settings: normal;
+	}
+
+	/* Custom scrollbar for mobile feel */
+	::-webkit-scrollbar {
+		width: 4px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: hsl(var(--muted-foreground) / 0.3);
+		border-radius: 4px;
+	}
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+	/* Glass effect for cards */
+	.glass {
+		backdrop-filter: blur(12px);
+		background: hsl(var(--card) / 0.8);
+	}
+
+	/* Sport level color utilities for Tailwind */
+	.bg-level-school {
+		background-color: hsl(var(--level-school));
+	}
+
+	.bg-level-district {
+		background-color: hsl(var(--level-district));
+	}
+
+	.bg-level-state {
+		background-color: hsl(var(--level-state));
+	}
+
+	.bg-level-national {
+		background-color: hsl(var(--level-national));
+	}
+
+	/* Sport level badges (legacy support) */
+	.badge-school {
+		background: hsl(var(--level-school));
+		color: white;
+	}
+
+	.badge-district {
+		background: hsl(var(--level-district));
+		color: white;
+	}
+
+	.badge-state {
+		background: hsl(var(--level-state));
+		color: white;
+	}
+
+	.badge-national {
+		background: hsl(var(--level-national));
+		color: white;
+	}
+
+	/* Verified badge glow */
+	.verified-glow {
+		box-shadow: 0 0 12px hsl(var(--success) / 0.4);
+	}
+
+	/* Achievement card hover */
+	.achievement-card {
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.achievement-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px hsl(var(--foreground) / 0.08);
+	}
+
+	/* Safe bottom padding for mobile nav */
+	.safe-bottom {
+		padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+	}
+
+	/* Gradient text */
+	.gradient-text {
+		background: linear-gradient(
+			135deg,
+			hsl(var(--primary)),
+			hsl(var(--accent))
+		);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	/* Hero gradient */
+	.hero-gradient {
+		background: linear-gradient(
+			135deg,
+			hsl(var(--primary)) 0%,
+			hsl(180 70% 35%) 100%
+		);
+	}
+
+	/* Soft shadow for cards */
+	.card-shadow {
+		box-shadow: 0 2px 12px hsl(var(--foreground) / 0.04),
+			0 1px 3px hsl(var(--foreground) / 0.06);
+	}
+
+	/* Animated pulse for live indicators */
+	.pulse-live {
+		animation: pulse-live 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse-live {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	/* Animation utilities */
+	.animate-fade-in {
+		animation: fade-in 0.3s ease-out;
+	}
+
+	.animate-slide-up {
+		animation: slide-up 0.4s ease-out;
+	}
+
+	.animate-scale-in {
+		animation: scale-in 0.2s ease-out;
+	}
+
+	.animate-bounce-subtle {
+		animation: bounce-subtle 0.5s ease-in-out;
+	}
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes slide-up {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes scale-in {
+		from {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	@keyframes bounce-subtle {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-4px);
+		}
+	}
 }
