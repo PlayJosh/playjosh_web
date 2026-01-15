@@ -76,22 +76,14 @@ function LoginForm() {
           throw new Error('Please verify your email before logging in. Check your inbox for the verification link.')
         } else if (error.message.includes('Invalid login credentials')) {
           throw new Error('Invalid email or password.')
-        } 
-        
-        else {
-        // Check if user needs to complete onboarding
-        const { data: { user } } = await supabase.auth.getUser()
-        const needsOnboarding = !user?.user_metadata?.onboarding_completed
-  
-        if (needsOnboarding) {
-        router.push('/onboarding')
         } else {
-        router.push(redirectTo || '/')
-         }
-          }}
+          throw error
+        }
+      }
 
       // If we get here, login was successful
-      const redirectPath = searchParams.get('redirectedFrom') || redirectTo
+      // Middleware will handle onboarding redirect if needed
+      const redirectPath = searchParams.get('redirectedFrom') || redirectTo || '/Home'
       router.push(redirectPath)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'

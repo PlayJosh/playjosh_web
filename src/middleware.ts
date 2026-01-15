@@ -99,7 +99,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // ... (keep existing imports)
 
 const authRoutes = ['/login', '/signup', '/verify-email']
-const publicRoutes = ['/forgot-password', '/reset-password', '/api/auth/callback', '/']
+const publicRoutes = ['/forgot-password', '/reset-password', '/api/auth/callback', '/', '/feed']
 const protectedRoutes = ['/profile', '/dashboard', '/settings'] // Add your protected routes here
 const onboardingRoute = '/onboarding'
 const homeRoute = '/Home'
