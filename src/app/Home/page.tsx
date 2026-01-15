@@ -1,11 +1,38 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FiUser } from 'react-icons/fi'
+import { supabase } from '@/lib/supabase/client'
 
 export default function HomePage() {
   const router = useRouter()
- const sportsFeed = [
+  const [profilePicture, setProfilePicture] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.email) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('profile_photo')
+            .eq('email', user.email)
+            .single()
+          
+          if (data?.profile_photo) {
+            setProfilePicture(data.profile_photo)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+      }
+    }
+
+    fetchProfile()
+  }, [])
+
+  const sportsFeed = [
     {
       id: 1,
       user: {
@@ -49,14 +76,24 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 fixed top-0 w-full z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-indigo-600">
+          <h1 className="text-2xl font-bold text-indigo-600 flex items-center h-12">
             PlayJosh
           </h1>
           <button
             onClick={() => router.push('/profile')}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-1 rounded-full hover:bg-gray-100 overflow-hidden cursor-pointer"
           >
-            <FiUser className="h-6 w-6 text-gray-700" />
+            {profilePicture ? (
+              <img 
+                src={profilePicture} 
+                alt="Profile" 
+                className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-white shadow-sm">
+                <FiUser className="h-7 w-7 text-gray-600" />
+              </div>
+            )}
           </button>
         </div>
       </header>

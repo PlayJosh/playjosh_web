@@ -8,18 +8,21 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+    const checkAuth = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        console.error('Authentication error:', error);
         router.push('/login');
-      } else {
-        // Here you can add logic to check which step the user is on
-        // For now, we'll redirect to step 1
-        router.push('/onboarding/step1');
+        return;
       }
+      
+      // Here you can add logic to check which step the user is on
+      // For now, we'll redirect to step 1
+      router.push('/onboarding/step1');
     };
 
-    checkSession();
+    checkAuth();
   }, [router]);
 
   return (

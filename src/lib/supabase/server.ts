@@ -52,14 +52,16 @@ export async function createClient() {
 // For server components and API routes
 export async function getServerSession() {
   const supabase = await createClient()
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const { data: { user }, error } = await supabase.auth.getUser()
   
-  if (error) {
-    console.error('Error getting session:', error)
-    return { supabase, session: null }
+  if (error || !user) {
+    console.error('Error getting user:', error)
+    return { supabase, session: null, user: null }
   }
   
-  return { supabase, session }
+  // Get the session for backward compatibility
+  const { data: { session } } = await supabase.auth.getSession()
+  return { supabase, session, user }
 }
 
 // Create a client instance that can be used in server components

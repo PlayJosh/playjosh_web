@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { FiUser, FiMapPin, FiAward, FiActivity, FiUsers, FiCalendar, FiEdit2, FiPlus, FiTarget, FiClock, FiX, FiCamera } from 'react-icons/fi'
-import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer } from 'react-icons/fa'
+import Image from 'next/image'
+import { FiUser, FiMapPin, FiEdit2, FiPlus, FiTarget, FiClock, FiX } from 'react-icons/fi'
+import { FaFutbol, FaBasketballBall, FaRunning, FaSwimmer, FaTrophy, FaBullseye, FaMedal } from 'react-icons/fa'
 
 import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
@@ -163,13 +163,7 @@ export default function ProfilePage() {
       }
     };
 
-    let isMounted = true;
-
     fetchData();
-
-    return () => {
-      isMounted = false;
-    };
   }, [])
 
   // Add this useEffect for debugging
@@ -246,10 +240,12 @@ export default function ProfilePage() {
                   className="h-40 w-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden cursor-pointer transition-transform hover:scale-105"
                   onClick={() => imageUrl && !imageError && setIsPhotoModalOpen(true)}
                 >
-                  {imageUrl && !imageError ? (
-                    <img
+                  {imageUrl && !imageError ? ( 
+                    <Image
                       src={imageUrl}
                       alt="Profile"
+                      width={160}
+                      height={160}
                       className="object-cover w-full h-full"
                       onError={() => setImageError(true)}
                     />
@@ -289,42 +285,35 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* Role • Playing Level */}
-                  <div className="flex items-center text-gray-600 mt-2">
+                  {/* Role - Enhanced Styling */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
                     {profile.role && (
-                      <span className="font-medium">{profile.role}</span>
-                    )}
-                    {profile.playing_level && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{profile.playing_level}</span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Location • Age */}
-                  <div className="flex items-center text-gray-500 mt-1 -ml-1">
-                    {profile.location && (
-                      <span className="flex items-center">
-                        <FiMapPin className="mr-1" />
-                        <span>{profile.location}</span>
+                      <span className="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-700 text-sm font-medium rounded-full border border-purple-100">
+                        <span className="whitespace-nowrap capitalize">{profile.role.toLowerCase()}</span>
                       </span>
                     )}
-                    {profile.age && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{profile.age} years</span>
-                      </>
+                    {profile.playing_level && (
+                      <span className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-700 text-sm font-medium rounded-full border border-amber-100">
+                        <span className="whitespace-nowrap">{profile.playing_level}</span>
+                      </span>
                     )}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm">
-                      <FiActivity className="mr-1" /> Active Member
-                    </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm">
-                      <FiUsers className="mr-1" /> Team Player
-                    </span>
+                  {/* Location and Age - Simplified Styling */}
+                  <div className="mt-3 text-gray-600 text-sm">
+                    <div className="flex items-center gap-3">
+                      {profile.location && (
+                        <span className="flex items-center">
+                          <FiMapPin className="mr-1.5 h-4 w-4 text-gray-400" />
+                          {profile.location}
+                        </span>
+                      )}
+                      {profile.age && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 bg-gray-50 text-gray-700 rounded-full border border-gray-200 text-xs font-medium">
+                          {profile.age} years
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -360,7 +349,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <FaFutbol className="mr-2 text-blue-600" />
+                  <FaTrophy className="mr-2 text-yellow-500" />
                   Sports Interests
                 </h2>
                 <Link
@@ -388,11 +377,42 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            {/* Goals Section */}
+           
+
+            {/* Achievements & Certifications */}
+            <div className="bg-white rounded-lg shadow-md p-6 w-full">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <FaMedal className="mr-2 text-amber-500" />
+                  Achievements & Certifications
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <Link 
+                    href="/profile/achievements/edit"
+                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    title="Add new achievement"
+                  >
+                    <FiPlus className="h-5 w-5" />
+                    <span className="sr-only">Add New</span>
+                  </Link>
+                  
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="mt-8">
+                  <AchievementsList />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+           {/* Goals Section */}
             <div className="bg-white rounded-lg shadow-md p-6 w-full">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <FiTarget className="mr-2 text-indigo-600" />
+                  <FaBullseye className="mr-2 text-red-500" />
                   My Goals
                 </h2>
                 <div className="flex items-center space-x-2">
@@ -453,35 +473,6 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-
-            {/* Achievements & Certifications */}
-            <div className="bg-white rounded-lg shadow-md p-6 w-full">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <FiAward className="mr-2 text-yellow-500" />
-                  Achievements & Certifications
-                </h2>
-                <div className="flex items-center space-x-2">
-                  <Link 
-                    href="/profile/achievements/edit"
-                    className="p-1.5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                    title="Add new achievement"
-                  >
-                    <FiPlus className="h-5 w-5" />
-                    <span className="sr-only">Add New</span>
-                  </Link>
-                  
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="mt-8">
-                  <AchievementsList />
-                </div>
-              </div>
-            </div>
-
-          </div>
 
           {/* Goals Section */}
           {/* <div className="bg-white rounded-lg shadow-md p-6">

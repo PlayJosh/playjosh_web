@@ -37,25 +37,19 @@ export default function Step3() {
       try {
         setIsLoading(true)
 
-        const { data: sessionData } = await supabase.auth.getSession()
-        if (!sessionData.session) {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error || !user) {
           router.replace('/login')
           return
         }
 
-        const { data: userData } = await supabase.auth.getUser()
-        if (!userData.user) {
-          router.replace('/login')
-          return
-        }
-
-        // ✅ Only check this ONE flag
-        if (userData.user.user_metadata?.onboarding_completed === true) {
+        // Check if onboarding is already completed
+        if (user.user_metadata?.onboarding_completed === true) {
           router.replace('/Home')
           return
         }
 
-        // User ID is available in userData.user.id if needed
+        // User ID is available in user.id if needed
       } catch {
         router.replace('/login')
       } finally {
@@ -144,7 +138,7 @@ export default function Step3() {
       <header className="mb-10">
         <button 
           onClick={() => router.back()}
-          className="text-gray-700 hover:text-gray-900 transition-colors"
+          className="text-gray-700 hover:text-gray-900 transition-colors cursor-pointer"
         >
           <FiArrowLeft size={28} />
         </button>
@@ -192,7 +186,7 @@ export default function Step3() {
                   )
                   setError(null)
                 }}
-                className={`flex items-center w-full p-4 rounded-xl border-2 transition-all text-left ${
+                className={`flex items-center w-full p-4 rounded-xl border-2 transition-all text-left cursor-pointer ${
                   purposes.includes(option.id)
                     ? 'border-indigo-500 bg-indigo-50'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -224,7 +218,7 @@ export default function Step3() {
           setHearAboutUs(option.id)
           setError(null)
         }}
-        className={`flex items-center p-4 rounded-xl border-2 transition-all ${
+        className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer ${
           hearAboutUs === option.id
             ? 'border-indigo-500 bg-indigo-50'
             : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -252,7 +246,7 @@ export default function Step3() {
           <button
             onClick={handleComplete}
             disabled={isSubmitting}
-            className="w-full py-3.5 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-xl disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full py-3.5 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-xl disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           >
             {isSubmitting ? 'Saving...' : 'Complete Profile'}
           </button>
@@ -261,7 +255,7 @@ export default function Step3() {
             type="button"
             onClick={handleSkip}
             disabled={isSubmitting}
-            className="w-full text-center text-sm font-medium text-indigo-500 hover:text-indigo-600"
+            className="w-full text-center text-sm font-medium text-indigo-500 hover:text-indigo-600 cursor-pointer"
           >
             {isSubmitting ? 'Skipping...' : 'Skip for now'}
           </button>

@@ -5,46 +5,72 @@ export default function Home() {
     <div className="bg-white">
       {/* Hero Section */}
       <div className="relative bg-white overflow-hidden pt-16 sm:pt-20 lg:pt-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 pb-12 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-24 xl:pb-28">
-            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="sm:text-center lg:text-left">
-                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                  <span className="block">Connect through</span>
-                  <span className="block text-indigo-600">Sports</span>
-                </h1>
-                <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                  Join PlayJosh to connect with players, join teams, and participate in local sports events. Your next game is just a click away!
-                </p>
-                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                  <div className="rounded-md shadow">
-                    <Link
-                      href="/signup"
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
-                    >
-                      Get started
-                    </Link>
-                  </div>
-                  <div className="mt-3 sm:mt-0 sm:ml-3">
-                    <Link
-                      href="/login"
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10"
-                    >
-                      Sign in
-                    </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-center">
+            {/* Left side - Content */}
+            <div className="relative z-10 pb-12 sm:pb-16 md:pb-20 lg:col-span-6 lg:pb-24 xl:pb-28">
+              <main>
+                <div className="sm:text-center lg:text-left">
+                  <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                    <span className="block">Connect through</span>
+                    <span className="block text-indigo-600">Sports</span>
+                  </h1>
+                  <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                    Join PlayJosh to connect with players, join teams, and participate in local sports events. Your next game is just a click away!
+                  </p>
+                  <div className="mt-8 space-y-4">
+                    <div className="flex items-center">
+                      <div className="shrink-0 bg-indigo-500 rounded-full p-1">
+                        <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <p className="ml-3 text-base text-gray-600">Connect with local players and teams</p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="shrink-0 bg-indigo-500 rounded-full p-1">
+                        <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <p className="ml-3 text-base text-gray-600">Find and join sports events near you</p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="shrink-0 bg-indigo-500 rounded-full p-1">
+                        <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <p className="ml-3 text-base text-gray-600">Track your progress and achievements</p>
+                    </div>
                   </div>
                 </div>
+              </main>
+            </div>
+            
+            {/* Right side - Hero Image (Desktop) */}
+            <div className="hidden lg:block lg:col-span-6">
+              <div className="relative h-full">
+                <img
+                  src="/hero.png"
+                  alt="People playing sports"
+                  className="w-full h-auto max-w-4xl mx-auto lg:max-w-5xl lg:ml-auto transform scale-125"
+                />
               </div>
-            </main>
+            </div>
+          </div>
+          
+          {/* Hero Image (Mobile - below content) */}
+          <div className="lg:hidden mt-10">
+            <div className="relative w-full h-80 sm:h-96 md:h-112">
+              <img
+                src="/hero.png"
+                alt="People playing sports"
+                className="w-full h-full object-contain scale-110"
+              />
+            </div>
           </div>
         </div>
-        {/* <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-          <img
-            className="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full"
-            src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1605&q=80"
-            alt="People playing sports"
-          />
-        </div> */}
       </div>
 
       {/* Enhanced Features Section */}

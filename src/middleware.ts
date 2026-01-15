@@ -153,10 +153,10 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user }, error } = await supabase.auth.getUser()
 
     /* ---------------- UNAUTHENTICATED USERS ---------------- */
-    if (!session) {
+    if (error || !user) {
       // Allow access to public pages
       if (!protectedRoutes.some(route => pathname.startsWith(route))) {
         return response
@@ -174,8 +174,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(homeRoute, request.url))
     }
 
-    const metadata = session.user.user_metadata || {}
-    const onboardingCompleted = metadata.onboarding_completed === true
+    const metadata = user.user_metadata || {}
+    const onboardingCompleted = metadata.onboarding_status === 'completed'
 
     // Handle onboarding redirection
     if (!onboardingCompleted && !pathname.startsWith(onboardingRoute)) {

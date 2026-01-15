@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiArrowLeft, FiTrash2, FiEdit2, FiClock, FiTarget } from 'react-icons/fi'
+import { FiArrowLeft, FiTrash2, FiEdit2 } from 'react-icons/fi'
+import { FaFlag, FaTrophy, FaCalendarAlt, FaClock } from 'react-icons/fa'
 import { supabase } from '@/lib/supabase/client'
 
 export type Goal = {
@@ -294,49 +295,61 @@ export default function GoalsPage() {
             <div>
               <span className="block text-sm font-medium text-gray-700 mb-3">Goal Type</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                <label className={`group flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all ${
                   goalType === 'short_term' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-500 bg-blue-50 shadow-sm' 
+                    : 'border-gray-200 hover:border-blue-200 bg-white hover:bg-blue-50/50'
                 }`}>
+                  <div className={`p-2.5 rounded-lg mr-4 ${goalType === 'short_term' ? 'bg-blue-100' : 'bg-gray-100 group-hover:bg-blue-100/50'}`}>
+                    <FaFlag className={`h-5 w-5 ${goalType === 'short_term' ? 'text-blue-500' : 'text-gray-400 group-hover:text-blue-400'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <span className={`text-lg font-semibold ${goalType === 'short_term' ? 'text-blue-800' : 'text-gray-800'}`}>
+                        Short Term Goal
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">Achievable within 3 months</p>
+                    <div className="mt-2 flex items-center text-xs text-gray-500">
+                      <FaClock className="mr-1.5 h-3.5 w-3.5 text-blue-400" />
+                      <span>Quick wins and milestones</span>
+                    </div>
+                  </div>
                   <input
                     type="radio"
                     className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
                     checked={goalType === 'short_term'}
                     onChange={() => setGoalType('short_term')}
                   />
-                  <div className="ml-3">
-                    <div className="flex items-center">
-                      <FiClock className={`mr-2 ${goalType === 'short_term' ? 'text-blue-600' : 'text-gray-500'}`} />
-                      <span className={`font-medium ${goalType === 'short_term' ? 'text-blue-700' : 'text-gray-700'}`}>
-                        Short Term
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">Achievable within 3 months</p>
-                  </div>
                 </label>
                 
-                <label className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                <label className={`group flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all ${
                   goalType === 'long_term' 
-                    ? 'border-purple-500 bg-purple-50' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-purple-500 bg-purple-50 shadow-sm' 
+                    : 'border-gray-200 hover:border-purple-200 bg-white hover:bg-purple-50/50'
                 }`}>
+                  <div className={`p-2.5 rounded-lg mr-4 ${goalType === 'long_term' ? 'bg-purple-100' : 'bg-gray-100 group-hover:bg-purple-100/50'}`}>
+                    <FaTrophy className={`h-5 w-5 ${goalType === 'long_term' ? 'text-yellow-500' : 'text-gray-400 group-hover:text-yellow-400'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <span className={`text-lg font-semibold ${goalType === 'long_term' ? 'text-purple-800' : 'text-gray-800'}`}>
+                        Long Term Goal
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">3+ months to achieve</p>
+                    <div className="mt-2 flex items-center text-xs text-gray-500">
+                      <FaCalendarAlt className="mr-1.5 h-3.5 w-3.5 text-purple-400" />
+                      <span>Major achievements and aspirations</span>
+                    </div>
+                  </div>
                   <input
                     type="radio"
                     className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500"
                     checked={goalType === 'long_term'}
                     onChange={() => setGoalType('long_term')}
                   />
-                  <div className="ml-3">
-                    <div className="flex items-center">
-                      <FiTarget className={`mr-2 ${goalType === 'long_term' ? 'text-purple-600' : 'text-gray-500'}`} />
-                      <span className={`font-medium ${goalType === 'long_term' ? 'text-purple-700' : 'text-gray-700'}`}>
-                        Long Term
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">3 months to 1+ year goals</p>
-                  </div>
-                </label>
+                  </label>
               </div>
             </div>
             
@@ -372,7 +385,7 @@ export default function GoalsPage() {
           {goals.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
               <div className="mx-auto w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                <FiTarget className="h-8 w-8 text-blue-500" />
+                <FaFlag className="h-8 w-8 text-blue-500" />
               </div>
               <h3 className="text-lg font-medium text-gray-900">No goals yet</h3>
               <p className="mt-1 text-gray-500">Add your first goal to get started on your journey!</p>
@@ -388,9 +401,9 @@ export default function GoalsPage() {
                     <div className="flex items-start space-x-4">
                       <div className={`p-2.5 rounded-lg ${goal.goal_type === 'short_term' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
                         {goal.goal_type === 'short_term' ? (
-                          <FiClock className="h-5 w-5" />
+                          <FaClock className="h-5 w-5 text-blue-500" />
                         ) : (
-                          <FiTarget className="h-5 w-5" />
+                          <FaTrophy className="h-5 w-5 text-yellow-500" />
                         )}
                       </div>
                       <div>
