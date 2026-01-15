@@ -1,4 +1,4 @@
-import { Post } from '@/types/feed';
+import { Post, Coach, Event, Conversation } from '@/types';
 
 export const mockPosts: Post[] = [
   {
@@ -64,4 +64,191 @@ export const mockPosts: Post[] = [
     reactions: { clap: 89, strong: 145, medal: 23 },
     timestamp: '1d ago',
   },
+];
+
+export const mockCoaches: Coach[] = [
+  {
+    id: 'coach1',
+    name: 'Coach Ravi Menon',
+    role: 'coach',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    sport: 'Badminton',
+    location: 'Mumbai, Maharashtra',
+    bio: 'Former national player with 15+ years of coaching experience. Specialized in training junior and sub-junior players.',
+    isVerified: true,
+    verificationStatus: 'verified',
+    experience: 15,
+    certifications: ['BWF Level 2', 'SAI Certified', 'Sports Psychology Diploma'],
+    studentsCount: 120,
+    rating: 4.9,
+    reviewsCount: 87,
+    availability: 'Mon-Sat, 6AM-10AM & 4PM-8PM',
+    studentAchievements: [
+      { id: 'a1', title: 'State Champion 2024', date: '2024', level: 'state' },
+      { id: 'a2', title: 'National Finalist 2023', date: '2023', level: 'national' },
+    ],
+  },
+  {
+    id: 'coach2',
+    name: 'Coach Sunita Rao',
+    role: 'coach',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face',
+    sport: 'Athletics',
+    location: 'Bangalore, Karnataka',
+    bio: 'Specializing in sprint and middle-distance events. Trained 3 national-level athletes.',
+    isVerified: true,
+    verificationStatus: 'verified',
+    experience: 12,
+    certifications: ['Athletics Federation of India Certified', 'NSNIS Diploma'],
+    studentsCount: 85,
+    rating: 4.8,
+    reviewsCount: 62,
+    availability: 'Mon-Fri, 5AM-9AM',
+    studentAchievements: [
+      { id: 'a3', title: 'National Record Holder - 400m', date: '2024', level: 'national' },
+    ],
+  },
+  {
+    id: 'coach3',
+    name: 'Coach Vikram Desai',
+    role: 'coach',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    sport: 'Cricket',
+    location: 'Delhi',
+    bio: 'Former Ranji player. Focus on batting technique and mental conditioning.',
+    isVerified: true,
+    verificationStatus: 'verified',
+    experience: 18,
+    certifications: ['BCCI Level 3', 'ECB Certified'],
+    studentsCount: 200,
+    rating: 4.7,
+    reviewsCount: 134,
+    availability: 'Daily, 4PM-8PM',
+    studentAchievements: [
+      { id: 'a4', title: 'IPL Selection 2024', date: '2024', level: 'national' },
+      { id: 'a5', title: 'U-19 World Cup Squad', date: '2023', level: 'national' },
+    ],
+  },
+  {
+    id: 'coach4',
+    name: 'Coach Meera Singh',
+    role: 'coach',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    sport: 'Swimming',
+    location: 'Chennai, Tamil Nadu',
+    bio: 'International swimmer turned coach. Expert in competitive swimming training.',
+    isVerified: true,
+    verificationStatus: 'verified',
+    experience: 10,
+    certifications: ['FINA Coaching Certificate', 'Lifeguard Certified'],
+    studentsCount: 65,
+    rating: 4.9,
+    reviewsCount: 48,
+    availability: 'Tue-Sun, 6AM-11AM',
+    studentAchievements: [
+      { id: 'a6', title: 'Asian Games Qualifier', date: '2024', level: 'national' },
+    ],
+  },
+  {
+    id: 'coach5',
+    name: 'Coach Anil Sharma',
+    role: 'coach',
+    avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=150&h=150&fit=crop&crop=face',
+    sport: 'Football',
+    location: 'Kolkata, West Bengal',
+    bio: 'Youth development specialist. Building the next generation of Indian football.',
+    verificationStatus: 'pending',
+    experience: 8,
+    certifications: ['AFC C License'],
+    studentsCount: 45,
+    rating: 4.5,
+    reviewsCount: 28,
+    availability: 'Mon-Sat, 4PM-7PM',
+    studentAchievements: [],
+  },
+];
+
+export const mockEvents: Event[] = [
+  {
+    id: 'event1',
+    title: 'PlayJosh Junior Badminton Championship 2024',
+    description: 'The biggest junior badminton tournament organized by PlayJosh. Compete with the best young talents across India.',
+    sport: 'Badminton',
+    date: 'April 15-18, 2024',
+    location: 'Shree Shiv Chhatrapati Sports Complex, Pune',
+    eligibility: 'Age 10-17, Any level',
+    rewards: ['₹50,000 Prize Pool', 'Scholarship opportunities', 'National ranking points', 'Sports equipment'],
+    image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
+    registrationOpen: true,
+  },
+  {
+    id: 'event2',
+    title: 'All India Swimming Meet - Summer 2024',
+    description: 'Annual swimming competition featuring all age groups. Hosted in partnership with Swimming Federation of India.',
+    sport: 'Swimming',
+    date: 'May 5-8, 2024',
+    location: 'Dr. SPM Swimming Pool Complex, Delhi',
+    eligibility: 'All age groups, District level and above',
+    rewards: ['₹1,00,000 Prize Pool', 'National camp selection', 'Medals & Certificates'],
+    image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
+    registrationOpen: true,
+  },
+  {
+    id: 'event3',
+    title: 'Youth Athletics Championship',
+    description: 'Track and field events for young athletes. Perfect platform to showcase your speed and agility.',
+    sport: 'Athletics',
+    date: 'June 10-12, 2024',
+    location: 'Jawaharlal Nehru Stadium, Chennai',
+    eligibility: 'Age 12-19',
+    rewards: ['₹75,000 Prize Pool', 'Training camp invitations', 'Sports scholarships'],
+    image: 'https://images.unsplash.com/photo-1461896836934-voices-of-the-mind?w=800',
+    registrationOpen: false,
+  },
+];
+
+export const mockConversations: Conversation[] = [
+  {
+    id: 'conv1',
+    participantId: 'coach1',
+    participantName: 'Coach Ravi Menon',
+    participantAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    participantRole: 'coach',
+    lastMessage: 'Great progress in today\'s session! Keep practicing the backhand.',
+    lastMessageTime: '10m ago',
+    unreadCount: 2,
+  },
+  {
+    id: 'conv2',
+    participantId: 'player2',
+    participantName: 'Priya Patel',
+    participantAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
+    participantRole: 'player',
+    lastMessage: 'Would you like to practice together this weekend?',
+    lastMessageTime: '2h ago',
+    unreadCount: 0,
+  },
+  {
+    id: 'conv3',
+    participantId: 'parent1',
+    participantName: 'Rajesh Kumar',
+    participantAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    participantRole: 'parent',
+    lastMessage: 'Thank you for the training schedule details.',
+    lastMessageTime: '1d ago',
+    unreadCount: 0,
+  },
+];
+
+export const sportsList = [
+  'Badminton', 'Cricket', 'Football', 'Athletics', 'Swimming', 
+  'Table Tennis', 'Tennis', 'Basketball', 'Volleyball', 'Hockey',
+  'Kabaddi', 'Wrestling', 'Boxing', 'Archery', 'Shooting',
+  'Gymnastics', 'Chess', 'Carrom', 'Squash', 'Golf'
+];
+
+export const locationsList = [
+  'Mumbai, Maharashtra', 'Delhi', 'Bangalore, Karnataka', 'Chennai, Tamil Nadu',
+  'Kolkata, West Bengal', 'Hyderabad, Telangana', 'Pune, Maharashtra', 
+  'Ahmedabad, Gujarat', 'Jaipur, Rajasthan', 'Lucknow, Uttar Pradesh'
 ];

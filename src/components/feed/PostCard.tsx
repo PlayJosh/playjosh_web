@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { MoreHorizontal, Flag, Share2, CheckCircle } from 'lucide-react';
-import { Post, ReactionType, SportLevel } from '@/types/feed';
+import { Post, ReactionType, SportLevel } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const filters = [
-  { id: 'all', label: 'All' },
-  { id: 'achievement', label: '🏆 Achievements' },
-  { id: 'training', label: '💪 Training' },
-  { id: 'event', label: '📅 Events' },
-  { id: 'journey', label: '🌟 Journeys' },
+  { id: "all", label: "All" },
+  { id: "achievement", label: "🏆 Achievements" },
+  { id: "training", label: "💪 Training" },
+  { id: "event", label: "📅 Events" },
+  { id: "journey", label: "🌟 Journeys" },
 ];
 
 interface FeedFiltersProps {
@@ -16,7 +16,7 @@ interface FeedFiltersProps {
 }
 
 export function FeedFilters({ onFilterChange }: FeedFiltersProps) {
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const handleFilterChange = (filterId: string) => {
     setActiveFilter(filterId);

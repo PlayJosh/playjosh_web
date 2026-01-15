@@ -1,11 +1,10 @@
 @import 'tailwindcss';
+/* @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); */
 
 /* PlayJosh Design System
    A sports-professional networking platform
    Calm, trustworthy, achievement-focused
 */
-
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @theme {
 	/* Color system - using HSL values for shadcn/ui compatibility */
