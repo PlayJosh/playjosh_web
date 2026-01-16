@@ -327,7 +327,7 @@ export default function Step1() {
 						sports: sports,
 						profile_photo: imageUrl,
 						onboarding_status:
-							'step1_completed',
+							'completed',
 						updated_at: new Date().toISOString(),
 					})
 					.eq('email', user.email)
@@ -345,7 +345,7 @@ export default function Step1() {
 					data: {
 						...user.user_metadata,
 						onboarding_status:
-							'step1_completed',
+							'completed',
 						full_name: fullName,
 						user_type: userType,
 						profile_photo: imageUrl,
@@ -359,9 +359,9 @@ export default function Step1() {
 			if (updateError) throw updateError;
 
 			console.log(
-				'All updates successful, redirecting to step 2...'
+				'All updates successful, onboarding completed. Redirecting to Home...'
 			);
-			router.push('/onboarding/step2');
+			router.push('/Home');
 		} catch (err) {
 			const error = err as Error;
 			console.error('Error in handleSubmit:', error);

@@ -28,11 +28,14 @@ useEffect(() => {
       if (!user) {
         console.log('No authenticated user, redirecting to login');
         router.push('/login');
-      } else {
-        console.log('User authenticated:', user.email);
+        return;
       }
+
+      // Step 2 and 3 are not accessible - redirect to Home
+      router.replace('/Home');
     } catch (err) {
       console.error('Error in session check:', err);
+      router.push('/login');
     } 
   };
   
