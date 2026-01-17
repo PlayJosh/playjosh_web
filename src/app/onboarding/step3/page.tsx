@@ -43,13 +43,8 @@ export default function Step3() {
           return
         }
 
-        // Check if onboarding is already completed
-        if (user.user_metadata?.onboarding_completed === true) {
-          router.replace('/Home')
-          return
-        }
-
-        // User ID is available in user.id if needed
+        // Step 2 and 3 are not accessible - redirect to Home
+        router.replace('/Home')
       } catch {
         router.replace('/login')
       } finally {
@@ -91,9 +86,11 @@ export default function Step3() {
 
     if (error) throw error
 
+    // Update auth metadata to match
     await supabase.auth.updateUser({
       data: {
-        onboarding_completed: true,
+        ...user.user_metadata,
+        onboarding_status: 'completed',
       },
     })
 
@@ -112,9 +109,26 @@ export default function Step3() {
     setError(null)
 
     try {
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData.user
+      if (!user?.email) throw new Error('User email not found')
+
+      // Update profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', user.email)
+
+      if (profileError) throw profileError
+
+      // Update auth metadata
       await supabase.auth.updateUser({
         data: {
-          onboarding_completed: true,
+          ...user.user_metadata,
+          onboarding_status: 'completed',
         },
       })
       router.replace('/Home')

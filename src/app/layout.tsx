@@ -25,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full bg-white">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans h-full flex flex-col`}>
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans h-full`}>
         <ClientLayout>
           {children}
         </ClientLayout>
